@@ -14,7 +14,6 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
         
-        /* 頂部固定導航欄 */
         header { 
             position: fixed; top: 0; width: 100%; height: 60px; 
             background: rgba(17, 21, 28, 0.98); backdrop-filter: blur(15px);
@@ -23,10 +22,8 @@
         }
         .logo { font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
         .market-status { font-family: 'JetBrains Mono'; font-size: 11px; color: var(--down); }
-
         .container { max-width: 1200px; margin: 80px auto 40px; padding: 0 20px; }
 
-        /* 影片重點摘要 */
         .hero-summary { 
             background: linear-gradient(145deg, #161b25, #0b0e14);
             border: 1px solid var(--accent); border-radius: 16px; 
@@ -36,7 +33,6 @@
         .summary-item { margin-bottom: 12px; font-size: 15px; line-height: 1.6; padding-left: 20px; position: relative; color: #cbd5e1; }
         .summary-item::before { content: '▶'; position: absolute; left: 0; color: var(--accent); font-size: 12px; top: 3px; }
 
-        /* 數據卡片網格 */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: 0.3s; }
         .card:hover { border-color: var(--accent); }
@@ -44,30 +40,17 @@
         .card-main { font-family: 'JetBrains Mono'; font-size: 26px; font-weight: 700; display: flex; align-items: baseline; gap: 8px; }
         .card-sub { font-size: 11px; margin-top: 5px; color: #64748b; }
 
-        /* 圖表與表格區 */
         .data-section { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
         .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; min-height: 380px; position: relative; }
         .chart-wrapper { position: relative; height: 300px; width: 100%; }
         
         .list-panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; }
-
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { text-align: left; font-size: 11px; color: #64748b; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
         td { padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 13px; }
 
-        /* RWD 手機優化 */
-        @media (max-width: 900px) {
-            .data-section { grid-template-columns: 1fr; }
-            .chart-panel { min-height: 300px; }
-            .chart-wrapper { height: 240px; }
-        }
-        @media (max-width: 600px) {
-            .logo { font-size: 20px; }
-            .container { margin-top: 75px; padding: 0 15px; }
-            .card-main { font-size: 22px; }
-            .hero-summary { padding: 20px; }
-            .hero-summary h2 { font-size: 16px; }
-        }
+        @media (max-width: 900px) { .data-section { grid-template-columns: 1fr; } .chart-wrapper { height: 240px; } }
+        @media (max-width: 600px) { .logo { font-size: 20px; } .container { margin-top: 75px; padding: 0 15px; } .card-main { font-size: 22px; } }
     </style>
 </head>
 <body>
@@ -79,12 +62,11 @@
 
     <div class="container">
         <div class="hero-summary">
-            <h2>📺 錢線百分百・每日重點摘要</h2>
+            <h2>📺 今日錢線百分百・數據修正摘要</h2>
             <div class="summary-list">
-                <div class="summary-item"><b>外資休假，內資當道：</b> 外資雖因假期賣超，但台股仍攻克歷史高點，顯示本土資金力道極強，OTC指數領先過高。</div>
-                <div class="summary-item"><b>元月效應樂觀：</b> 歷史數據顯示 1 月上漲機率逾 7 成。投資策略應鎖定「低位階補漲股」，如封測、PCB 與特化材料。</div>
-                <div class="summary-item"><b>記憶體循環正向：</b> 美光財報助攻，顆粒報價調漲，DDR4/DDR5需求強勁。南亞科、群聯等沿五日線操作，行情看至農曆年前。</div>
-                <div class="summary-item"><b>避險需求強烈：</b> 全球政府負債隱憂推升金價（年增 70%）與白銀（年增 130%）的大幅噴出，反映對長期債務危機的防範。</div>
+                <div class="summary-item"><b>金價創歷史奇蹟：</b> 現貨金價歷史性突破 <b>$4,500</b> 大關，年漲幅高達 72%，反映全球債務隱憂與避險瘋狂。</div>
+                <div class="summary-item"><b>台股創高與內資盤：</b> 外資休假期間，內資力守 28,556 點歷史新高，台積電穩站 1,510 元大關。</div>
+                <div class="summary-item"><b>元月行情佈局：</b> 資金轉向低位階補漲，記憶體、IC封測族群因報價上揚仍是 2026 開年核心重點。</div>
             </div>
         </div>
 
@@ -97,23 +79,23 @@
             <div class="card">
                 <div class="card-label">台積電 TSMC (2330)</div>
                 <div class="card-main" style="color: var(--up);">1,510 <span style="font-size: 14px;">▲ 1.68%</span></div>
-                <div class="card-sub">盤中與收盤皆創歷史新高價</div>
+                <div class="card-sub">2025 封關前夕創歷史新高價</div>
             </div>
             <div class="card">
                 <div class="card-label">美元/台幣 USD/TWD</div>
                 <div class="card-main" style="color: #fff;">31.595</div>
-                <div class="card-sub">趨勢：新台幣呈現緩步升值</div>
+                <div class="card-sub">趨勢：台幣緩步走升</div>
             </div>
             <div class="card">
                 <div class="card-label">黃金價格 GOLD</div>
-                <div class="card-main" style="color: #fbbf24;">$2,740 <span style="font-size: 14px;">+70% YTD</span></div>
-                <div class="card-sub">債務危機避險需求推動歷史新高</div>
+                <div class="card-main" style="color: #fbbf24;">$4,525 <span style="font-size: 14px;">+72% YTD</span></div>
+                <div class="card-sub">突破 $4,500 大關，創歷史新高記錄</div>
             </div>
         </div>
 
         <div class="data-section">
             <div class="chart-panel">
-                <h3 style="margin-bottom: 15px; font-size: 15px; color: var(--accent);">📊 年度關鍵資產走勢分析</h3>
+                <h3 style="margin-bottom: 15px; font-size: 15px; color: var(--accent);">📊 2025 年度關鍵資產走勢 (修正版)</h3>
                 <div class="chart-wrapper">
                     <canvas id="mainChart"></canvas>
                 </div>
@@ -126,10 +108,10 @@
                         <tr><th>名稱</th><th>策略</th><th>關鍵分析</th></tr>
                     </thead>
                     <tbody>
-                        <tr><td><b>南亞科</b></td><td style="color:var(--up)">記憶體</td><td>報價轉強，沿五日線操作</td></tr>
-                        <tr><td><b>南茂</b></td><td style="color:var(--accent)">低位階</td><td>封測落後補漲，籌碼乾淨</td></tr>
-                        <tr><td><b>聯發科</b></td><td style="color:var(--up)">權值</td><td>旗艦晶片需求旺，外資看多</td></tr>
-                        <tr><td><b>比特幣</b></td><td>避險</td><td>站穩 9 萬美元，投機熱度升</td></tr>
+                        <tr><td><b>南亞科</b></td><td style="color:var(--up)">記憶體</td><td>報價轉強，外資回補中</td></tr>
+                        <tr><td><b>南茂</b></td><td style="color:var(--accent)">低位階</td><td>封測落後補漲，籌碼極乾淨</td></tr>
+                        <tr><td><b>比特幣</b></td><td>避險</td><td>站穩 9 萬美元大關</td></tr>
+                        <tr><td><b>白銀</b></td><td style="color:var(--up)">商品</td><td>年漲幅達 130% 極度強勢</td></tr>
                     </tbody>
                 </table>
             </div>
@@ -149,11 +131,11 @@
                 datasets: [
                     { 
                         label: '台股加權指數 (%)', data: [10, 25, 40, 65.8], 
-                        borderColor: '#00e5ff', backgroundColor: gradient, fill: true, tension: 0.4, borderWidth: 3, pointRadius: 2
+                        borderColor: '#00e5ff', backgroundColor: gradient, fill: true, tension: 0.4, borderWidth: 3
                     },
                     { 
-                        label: '黃金年度表現 (%)', data: [15, 35, 50, 70], 
-                        borderColor: '#fbbf24', borderDash: [5, 5], tension: 0.4, borderWidth: 2, pointRadius: 0
+                        label: '黃金年度表現 (%)', data: [15, 35, 55, 72], 
+                        borderColor: '#fbbf24', borderDash: [5, 5], tension: 0.4, borderWidth: 2
                     }
                 ]
             },
@@ -162,8 +144,8 @@
                 maintainAspectRatio: false,
                 plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8', font: { size: 10 } } } },
                 scales: {
-                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b', font: { size: 10 } } },
-                    x: { grid: { display: false }, ticks: { color: '#64748b', font: { size: 10 } } }
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
                 }
             }
         });
