@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>錢線百分百 | 每日財經自動化儀表板</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary: #1a237e;
+            --secondary: #c62828;
+            --bg: #f0f2f5;
+            --card-bg: #ffffff;
+        }
+        body { font-family: 'PingFang TC', 'Microsoft JhengHei', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+        .container { max-width: 1200px; margin: auto; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; border-bottom: 3px solid var(--primary); padding-bottom: 10px; }
+        h1 { margin: 0; color: var(--primary); font-size: 24px; }
+        .date-badge { background: var(--primary); color: white; padding: 5px 15px; border-radius: 20px; font-size: 14px; }
+        
+        /* 數據卡片 */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); transition: 0.3s; }
+        .card:hover { transform: translateY(-5px); }
+        .label { color: #777; font-size: 14px; margin-bottom: 10px; }
+        .val { font-size: 28px; font-weight: 800; color: var(--secondary); }
+        .sub-label { font-size: 12px; color: #999; margin-top: 5px; }
+
+        /* 中間區塊：圖表與新聞 */
+        .main-content { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .section { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        h3 { margin-top: 0; border-left: 5px solid var(--primary); padding-left: 10px; }
+
+        /* 新聞列表 */
+        .news-item { border-bottom: 1px solid #eee; padding: 12px 0; font-size: 14px; line-height: 1.6; }
+        .news-item:last-child { border: none; }
+        .tag { background: #e8eaf6; color: var(--primary); padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold; margin-right: 5px; }
+
+        @media (max-width: 768px) { .main-content { grid-template-columns: 1fr; } }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📊 錢線百分百 每日焦點儀表板</h1>
+            <div class="date-badge">更新日期：2025/12/26</div>
+        </header>
+
+        <div class="grid">
+            <div class="card">
+                <div class="label">台股加權指數</div>
+                <div class="val">28,556 ▲</div>
+                <div class="sub-label">今日創歷史收盤新高</div>
+            </div>
+            <div class="card">
+                <div class="label">台積電 (2330)</div>
+                <div class="val">$1,510 ▲</div>
+                <div class="sub-label">收盤歷史新高，權值王領軍</div>
+            </div>
+            <div class="card">
+                <div class="label">新台幣匯率</div>
+                <div class="val">31.595</div>
+                <div class="sub-label">呈現緩升趨勢，靜待外資</div>
+            </div>
+            <div class="card">
+                <div class="label">聯準會利率預期</div>
+                <div class="val">降息 2-3 次</div>
+                <div class="sub-label">2026 貨幣政策轉趨穩定</div>
+            </div>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h3>📈 關鍵資產年度趨勢</h3>
+                <canvas id="mainChart" height="150"></canvas>
+                <div style="margin-top: 20px; font-size: 13px; color: #666;">
+                    * 註：黃金與白銀反映了市場對於全球貨幣寬鬆及通膨的預期。
+                </div>
+            </div>
+
+            <div class="section">
+                <h3>📰 今日新聞重點摘要</h3>
+                <div class="news-item">
+                    <span class="tag">股市</span> 外資休假中，內資主導盤勢，OTC 指數領先過高，資金積極卡位元月行情。
+                </div>
+                <div class="news-item">
+                    <span class="tag">產業</span> 記憶體族群強勢！美光財報超預期，帶動南亞科、華邦電沿五日線向上。
+                </div>
+                <div class="news-item">
+                    <span class="tag">宏觀</span> 川普 2.0 政策預期：降息與關稅成焦點，全球財政惡化風險需長期留意。
+                </div>
+                <div class="news-item">
+                    <span class="tag">黃金</span> 避險資金湧入，金價今年已漲 70%，白銀漲幅更達 130%。
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
+                datasets: [
+                    {
+                        label: '台股指數 (%)',
+                        data: [5, 12, 18, 23.5],
+                        borderColor: '#2196F3',
+                        tension: 0.3,
+                        fill: false
+                    },
+                    {
+                        label: '黃金價格 (%)',
+                        data: [15, 30, 55, 70],
+                        borderColor: '#FFC107',
+                        tension: 0.3,
+                        fill: false
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: 'bottom' } }
+            }
+        });
+    </script>
+</body>
+</html>
