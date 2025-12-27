@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>USTV Money 100 | Pro Terminal</title>
+    <title>Jason TV | 專業財經終端儀表板</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
@@ -12,12 +12,12 @@
             --accent-green: #00ff88; --accent-red: #ff4d4d; --text-gray: #848e9c; --border: #2b2f3a;
         }
         * { box-sizing: border-box; }
-        html { scroll-behavior: smooth; } /* 平滑滾動 */
+        html { scroll-behavior: smooth; }
         body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg-dark); color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
         /* 側邊導航欄 */
         aside { width: 240px; background: var(--panel-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; flex-shrink: 0; }
-        .logo-area { padding: 30px 20px; font-size: 20px; font-weight: 700; color: var(--accent-blue); border-bottom: 1px solid var(--border); }
+        .logo-area { padding: 30px 20px; font-size: 22px; font-weight: 800; color: var(--accent-blue); border-bottom: 1px solid var(--border); letter-spacing: 2px; }
         .nav-links { flex: 1; padding: 20px 0; }
         .nav-item { padding: 15px 25px; color: var(--text-gray); cursor: pointer; display: block; text-decoration: none; transition: 0.3s; font-size: 15px; }
         .nav-item:hover { background: rgba(0, 229, 255, 0.05); color: white; border-left: 4px solid var(--accent-blue); }
@@ -27,7 +27,6 @@
         .top-ticker { height: 40px; background: #1a1e26; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; font-family: 'JetBrains Mono'; font-size: 13px; position: sticky; top: 0; z-index: 10; }
         .content { padding: 30px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
         .section-title { grid-column: 1 / -1; font-size: 18px; font-weight: 700; margin: 40px 0 15px 0; display: flex; align-items: center; gap: 10px; padding-top: 20px; }
-        .section-title:first-child { margin-top: 0; }
         .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
 
         /* 組件樣式 */
@@ -43,18 +42,19 @@
 <body>
 
     <aside>
-        <div class="logo-area">USTV MONITOR</div>
+        <div class="logo-area">JASON TV</div>
         <div class="nav-links">
             <a href="#summary" class="nav-item">● 市場總覽</a>
             <a href="#rankings" class="nav-item">○ 成交排行</a>
             <a href="#forex" class="nav-item">○ 匯率/商品</a>
             <a href="#strategy" class="nav-item">○ 策略研究</a>
         </div>
+        <div style="padding: 20px; font-size: 10px; color: var(--text-gray);">System v4.1 Powered by Jason</div>
     </aside>
 
     <main>
         <div class="top-ticker">
-            <div style="color:var(--accent-green); margin-right:20px;">● LIVE</div>
+            <div style="color:var(--accent-green); margin-right:20px;">● JASON TV LIVE</div>
             <div>TAIEX: 28,556 <span style="color:var(--accent-red)">+0.65%</span></div>
             <div style="margin-left: auto;">最後更新：2025-12-27</div>
         </div>
@@ -70,12 +70,12 @@
                 <div class="card-value">1,510 <span style="color:var(--accent-red); font-size:14px;">▲</span></div>
             </div>
             <div class="stat-card">
-                <div style="color:var(--text-gray); font-size:12px;">成交總量</div>
-                <div class="card-value">4,428 億</div>
+                <div style="color:var(--text-gray); font-size:12px;">新台幣匯率</div>
+                <div class="card-value">31.595</div>
             </div>
             <div class="stat-card">
-                <div style="color:var(--text-gray); font-size:12px;">市場情緒</div>
-                <div class="card-value" style="color:var(--accent-green)">偏多</div>
+                <div style="color:var(--text-gray); font-size:12px;">黃金 (GOLD)</div>
+                <div class="card-value">$2,740</div>
             </div>
 
             <div class="data-panel">
@@ -97,53 +97,7 @@
             </div>
 
             <div id="forex" class="section-title">匯率/商品 (FX & Commodities)</div>
-            <div class="stat-card">
-                <div style="color:var(--text-gray); font-size:12px;">USD/TWD</div>
-                <div class="card-value">31.595</div>
-            </div>
-            <div class="stat-card">
-                <div style="color:var(--text-gray); font-size:12px;">黃金 (GOLD)</div>
-                <div class="card-value">$2,740</div>
-            </div>
-            <div class="stat-card">
-                <div style="color:var(--text-gray); font-size:12px;">10Y 債券殖利率</div>
-                <div class="card-value">4.25%</div>
-            </div>
-            <div class="stat-card">
-                <div style="color:var(--text-gray); font-size:12px;">比特幣 (BTC)</div>
-                <div class="card-value">$95,200</div>
-            </div>
-
-            <div id="strategy" class="section-title">策略研究 (Strategy Research)</div>
-            <div class="data-panel" style="grid-column: 1 / span 4;">
-                <div class="news-item">
-                    <b style="color:var(--accent-blue)">● 元月行情佈局重點</b><br>
-                    內資目前主導盤勢，避開過熱的 AI 硬體，關注低位階的「記憶體」與「IC 測試」。
-                </div>
-                <div class="news-item">
-                    <b style="color:var(--accent-blue)">● 避險資產配置</b><br>
-                    金價與白銀持續反映全球債務危機風險，建議資產配置中保留 5-10% 的實體或黃金 ETF。
-                </div>
-            </div>
-        </div>
-    </main>
-
-    <script>
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'line',
-            data: {
-                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                datasets: [{
-                    label: 'TAIEX Index',
-                    data: [10, 25, 45, 65],
-                    borderColor: '#00e5ff',
-                    tension: 0.4,
-                    fill: false
-                }]
-            },
-            options: { maintainAspectRatio: false, plugins: { legend: { display: false } } }
-        });
-    </script>
-</body>
-</html>
+            <div class="stat-card"><div style="color:var(--text-gray); font-size:12px;">美元指數</div><div class="card-value">102.5</div></div>
+            <div class="stat-card"><div style="color:var(--text-gray); font-size:12px;">10Y 債券殖利率</div><div class="card-value">4.25%</div></div>
+            <div class="stat-card"><div style="color:var(--text-gray); font-size:12px;">比特幣</div><div class="card-value">$95,200</div></div>
+            <div class
