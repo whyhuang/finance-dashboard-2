@@ -3,52 +3,199 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>專業財經監測站</title>
+    <title>USTV Money 100 | 專業財經終端儀表板</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Noto+Sans+TC:wght@300;500;700&display=swap" rel="stylesheet">
     <style>
-        body { margin: 0; padding: 0; background: #0f172a; color: white; font-family: sans-serif; }
-        .wrapper { display: flex; min-height: 100vh; }
-        nav { width: 220px; background: #1e293b; padding: 20px; border-right: 1px solid #334155; }
-        main { flex: 1; padding: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .card { background: #1e293b; padding: 20px; border-radius: 12px; border: 1px solid #334155; }
-        .card-val { font-size: 28px; font-weight: bold; color: #ef4444; margin-top: 10px; }
-        .chart-box { background: #1e293b; padding: 20px; border-radius: 12px; height: 350px; }
+        :root {
+            --bg-dark: #0b0e14;
+            --panel-bg: #151921;
+            --accent-blue: #00e5ff;
+            --accent-green: #00ff88;
+            --accent-red: #ff4d4d;
+            --text-gray: #848e9c;
+            --border: #2b2f3a;
+        }
+        * { box-sizing: border-box; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg-dark); color: white; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        
+        /* 側邊導航欄 */
+        aside { width: 240px; background: var(--panel-bg); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
+        .logo-area { padding: 30px 20px; font-size: 22px; font-weight: 700; color: var(--accent-blue); letter-spacing: 1px; border-bottom: 1px solid var(--border); }
+        .nav-links { flex: 1; padding: 20px 0; }
+        .nav-item { padding: 15px 25px; color: var(--text-gray); cursor: pointer; display: flex; align-items: center; transition: 0.3s; }
+        .nav-item:hover, .nav-item.active { background: rgba(0, 229, 255, 0.05); color: white; border-left: 4px solid var(--accent-blue); }
+
+        /* 主區域佈局 */
+        main { flex: 1; display: flex; flex-direction: column; overflow-y: overlay; }
+        
+        /* 頂部即時資訊條 */
+        .top-ticker { height: 40px; background: #1a1e26; border-bottom: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; font-family: 'JetBrains Mono'; font-size: 13px; gap: 30px; }
+        .status-dot { width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 8px var(--accent-green); }
+
+        /* 儀表板主體 */
+        .content { padding: 30px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+        .section-title { grid-column: 1 / -1; font-size: 20px; font-weight: 700; margin-bottom: 10px; display: flex; align-items: center; gap: 10px; }
+        .section-title::after { content: ""; flex: 1; height: 1px; background: var(--border); }
+
+        /* 指標卡片 */
+        .stat-card { background: var(--panel-bg); padding: 20px; border-radius: 4px; border: 1px solid var(--border); transition: 0.2s; }
+        .stat-card:hover { border-color: var(--accent-blue); background: #1c212b; }
+        .card-label { color: var(--text-gray); font-size: 12px; margin-bottom: 8px; }
+        .card-value { font-size: 26px; font-family: 'JetBrains Mono'; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
+        .trend-up { color: var(--accent-red); font-size: 14px; }
+        .trend-down { color: var(--accent-green); font-size: 14px; }
+
+        /* 下方大區塊佈局 */
+        .lower-layout { grid-column: 1 / -1; display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        .data-panel { background: var(--panel-bg); padding: 25px; border-radius: 4px; border: 1px solid var(--border); }
+
+        /* 表格樣式 */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 14px; }
+        th { text-align: left; color: var(--text-gray); padding: 12px 8px; border-bottom: 1px solid var(--border); }
+        td { padding: 15px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        /* 新聞與策略清單 */
+        .news-list { margin-top: 10px; }
+        .news-item { padding: 15px; background: rgba(255,255,255,0.02); margin-bottom: 10px; border-radius: 4px; line-height: 1.6; }
+        .news-item b { color: var(--accent-blue); display: block; margin-bottom: 5px; font-size: 13px; }
     </style>
 </head>
 <body>
-    <div class="wrapper">
-        <nav>
-            <h2 style="color:#38bdf8">USTV Pro</h2>
-            <p>概覽</p>
-            <p>歷史數據</p>
-        </nav>
-        <main>
-            <h1>市場即時監控 (2025/12/26)</h1>
-            <div class="grid">
-                <div class="card"><div>加權指數</div><div class="card-val">28,556</div></div>
-                <div class="card"><div>台積電</div><div class="card-val">1,510</div></div>
-                <div class="card"><div>美金/台幣</div><div class="card-val" style="color:white">31.595</div></div>
+
+    <aside>
+        <div class="logo-area">USTV TERMINAL</div>
+        <div class="nav-links">
+            <div class="nav-item active">● 市場總覽</div>
+            <div class="nav-item">○ 成交排行</div>
+            <div class="nav-item">○ 匯率/商品</div>
+            <div class="nav-item">○ 策略研究</div>
+        </div>
+        <div style="padding: 20px; font-size: 10px; color: var(--text-gray);">System v4.0.25 Live</div>
+    </aside>
+
+    <main>
+        <div class="top-ticker">
+            <div style="display:flex; align-items:center; gap:8px;">
+                <div class="status-dot"></div> MARKET LIVE
             </div>
-            <div class="chart-box">
-                <canvas id="myChart"></canvas>
+            <div>TSMC: 1,510 <span style="color:var(--accent-red);">+1.3%</span></div>
+            <div>TAIEX: 28,556 <span style="color:var(--accent-red);">+0.65%</span></div>
+            <div>USD/TWD: 31.595</div>
+            <div style="margin-left: auto; color: var(--text-gray);">2025-12-27 19:47:31</div>
+        </div>
+
+        <div class="content">
+            <div class="section-title">今日核心觀測</div>
+            
+            <div class="stat-card">
+                <div class="card-label">加權指數 TAIEX</div>
+                <div class="card-value">28,556 <span class="trend-up">▲ 184</span></div>
+                <div style="margin-top:8px; font-size:11px; color:var(--accent-green);">量能: 4,428 億 (健康)</div>
             </div>
-        </main>
-    </div>
+            <div class="stat-card">
+                <div class="card-label">台積電 TSMC</div>
+                <div class="card-value">1,510 <span class="trend-up">▲ 25</span></div>
+                <div style="margin-top:8px; font-size:11px; color:var(--text-gray);">收盤歷史新高</div>
+            </div>
+            <div class="stat-card">
+                <div class="card-label">黃金價格 GOLD</div>
+                <div class="card-value">$2,740 <span class="trend-up">+70% YTD</span></div>
+                <div style="margin-top:8px; font-size:11px; color:var(--text-gray);">創歷史新高</div>
+            </div>
+            <div class="stat-card">
+                <div class="card-label">聯準會利率預期</div>
+                <div class="card-value">4.50% <span style="font-size:14px; color:var(--accent-blue);">穩定</span></div>
+                <div style="margin-top:8px; font-size:11px; color:var(--text-gray);">預計 2026 降息 3 次</div>
+            </div>
+
+            <div class="lower-layout">
+                <div class="data-panel">
+                    <h3 style="margin:0 0 20px 0;">趨勢分析看板 (TAIEX vs GOLD)</h3>
+                    <div style="height: 300px;">
+                        <canvas id="mainChart"></canvas>
+                    </div>
+                    
+                    <h3 style="margin:40px 0 10px 0;">盤面熱點掃描</h3>
+                    <table>
+                        <thead>
+                            <tr><th>代號</th><th>名稱</th><th>最新價</th><th>漲跌幅</th><th>關鍵題材</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>2330</td><td>台積電</td><td>1,510</td><td style="color:var(--accent-red)">+1.68%</td><td>AI 需求強勁/擴產預期</td></tr>
+                            <tr><td>3105</td><td>穩懋</td><td>198.5</td><td style="color:var(--accent-red)">+4.20%</td><td>PA 族群補漲/消費電子復甦</td></tr>
+                            <tr><td>8081</td><td>致新</td><td>245</td><td style="color:var(--accent-green)">-0.5%</td><td>IC 設計/季底結帳壓力</td></tr>
+                            <tr><td>2454</td><td>聯發科</td><td>1,320</td><td style="color:var(--accent-red)">+0.76%</td><td>旗艦晶片出貨暢旺</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="data-panel">
+                    <h3 style="margin:0 0 20px 0;">錢線焦點分析</h3>
+                    <div class="news-list">
+                        <div class="news-item">
+                            <b>● 耶誕行情啟動 (外資收假前)</b>
+                            外資雖休假，但美股標普創高帶動台股內資信心。OTC 指數強勢領先過高，中小型股表現優於權值股。
+                        </div>
+                        <div class="news-item">
+                            <b>● 記憶體族群：真心的轉機？</b>
+                            美光財報強勁，顆粒報價調漲已成定局。模組廠群聯庫存收益顯著，行情預計延續至農曆年前。
+                        </div>
+                        <div class="news-item">
+                            <b>● 2026 財政風險警報</b>
+                            長期需警惕各國政府負債惡化，長期利率維持高檔，這也是金價與白銀今年暴漲的主因。
+                        </div>
+                        <div class="news-item" style="background: rgba(0, 229, 255, 0.1);">
+                            <b>💡 投資操盤筆記</b>
+                            封關前找「低位階」補漲股，如 IC 測試、特定 PCB 族群，避免過度追高已大漲之 AI 強勢股。
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
     <script>
-        const ctx = document.getElementById('myChart').getContext('2d');
+        const ctx = document.getElementById('mainChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(0, 229, 255, 0.2)');
+        gradient.addColorStop(1, 'rgba(0, 229, 255, 0)');
+
         new Chart(ctx, {
             type: 'line',
             data: {
                 labels: ['Q1', 'Q2', 'Q3', 'Q4'],
                 datasets: [{
-                    label: '市場漲幅 (%)',
+                    label: '台股加權指數 (%)',
                     data: [5, 12, 18, 23.5],
-                    borderColor: '#38bdf8',
-                    tension: 0.3
+                    borderColor: '#00e5ff',
+                    backgroundColor: gradient,
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#00e5ff'
+                }, {
+                    label: '黃金年度表現 (%)',
+                    data: [15, 30, 55, 70],
+                    borderColor: '#fbbf24',
+                    borderWidth: 2,
+                    borderDash: [5, 5],
+                    tension: 0.4,
+                    pointRadius: 0
                 }]
             },
-            options: { maintainAspectRatio: false }
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { labels: { color: '#848e9c', font: { size: 12 } } }
+                },
+                scales: {
+                    y: { grid: { color: 'rgba(255,255,255,0.05)' }, ticks: { color: '#848e9c' } },
+                    x: { grid: { display: false }, ticks: { color: '#848e9c' } }
+                }
+            }
         });
     </script>
 </body>
