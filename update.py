@@ -16,7 +16,6 @@ def get_video_data():
         item = res['items'][0]['snippet']
         return {"title": item['title'], "desc": item['description']}
     except:
-        # 若抓取失敗，回傳備用數據
         return {"title": "錢線百分百 (備用源)", "desc": "台積電法說展望佳，AI 伺服器供應鏈續強，關注央行利率政策與元月行情。"}
 
 def get_ai_analysis(video):
@@ -30,16 +29,16 @@ def get_ai_analysis(video):
         return json.loads(clean_json)
     except:
         return {
-            "summary": ["外資休假內資主導，指數高檔震盪", "聯準會維持利率不變，市場預期明年降息", "元月行情啟動，鎖定低基期補漲股", "避險資金湧入，金價支撐強勁"],
+            "summary": ["外資休假內資主導，指數高檔震盪", "聯準會維持利率不變，市場預期明年降息", "日圓持續走貶，留意旅遊換匯甜蜜點", "比特幣高檔震盪，加密貨幣資金輪動"],
             "stocks": [{"code": "2330", "name": "台積電", "reason": "先進製程滿載"}]
         }
 
 def save_to_index(ai_data, video):
-    """生成 v8.0 擴充版網頁"""
+    """生成 v8.5 擴充版網頁 (新增日圓、BTC、美債)"""
     update_time = (datetime.datetime.now() + datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M")
     
-    # HTML 內容生成
-    s_html = "".join([f'<div style="margin-bottom:8px; position:relative; padding-left:20px;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>{s}</div>' for s in ai_data.get('summary', [])])
+    # HTML 生成
+    s_html = "".join([f'<div style="margin-bottom:8px; position:relative; padding-left:20px; line-height:1.5;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>{s}</div>' for s in ai_data.get('summary', [])])
     t_html = "".join([f"<tr><td style='font-weight:bold; color:#00e5ff;'>{s.get('code','')}</td><td>{s.get('name','')}</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>{s.get('reason','')}</td></tr>" for s in ai_data.get('stocks', [])])
 
     html = f"""
@@ -47,30 +46,26 @@ def save_to_index(ai_data, video):
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v8.0 | 全球財經戰情室</title>
+    <title>Jason TV v8.5 | 全球戰情擴充版</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {{ --bg: #05070a; --accent: #00e5ff; --card: #11151c; --border: #232a35; --up: #ff4d4d; --text: #e2e8f0; }}
+        :root {{ --bg: #05070a; --accent: #00e5ff; --card: #11151c; --border: #232a35; --up: #ff4d4d; --down: #00ff88; --text: #e2e8f0; }}
         body {{ font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }}
         
-        /* 導航 */
         header {{ position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; }}
         .logo {{ font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5); }}
         
         .container {{ max-width: 1200px; margin: 80px auto; padding: 0 20px; }}
+        .hero {{ background: linear-gradient(145deg, #161b25, #0b0e14); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; margin-bottom: 30px; }}
         
-        /* 摘要區 */
-        .hero {{ background: linear-gradient(145deg, #161b25, #0b0e14); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 0 20px rgba(0,229,255,0.05); }}
-        
-        /* 數據網格 (改為自動適應，可容納更多卡片) */
-        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }}
+        /* 網格改為 4欄佈局 (PC端) */
+        .grid {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }}
         .card {{ background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: 0.3s; }}
         .card:hover {{ border-color: var(--accent); transform: translateY(-3px); }}
         .card-label {{ font-size: 12px; color: #94a3b8; margin-bottom: 5px; }}
         .card-val {{ font-family: 'JetBrains Mono'; font-size: 24px; font-weight: 700; color: var(--text); }}
         
-        /* 表格與圖表 */
         .panel {{ background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; margin-bottom: 20px; }}
         table {{ width: 100%; border-collapse: collapse; margin-top: 10px; }}
         th {{ text-align: left; color: #64748b; font-size: 12px; border-bottom: 1px solid var(--border); padding: 10px; }}
@@ -86,7 +81,7 @@ def save_to_index(ai_data, video):
     <div class="container">
         <div class="hero">
             <h2 style="color:var(--accent); margin-bottom:15px; font-size:18px;">📺 AI 戰情摘要 (來源：{video['title']})</h2>
-            <div style="line-height:1.6; color:#cbd5e1;">{s_html}</div>
+            <div style="color:#cbd5e1;">{s_html}</div>
         </div>
 
         <div class="grid">
@@ -94,13 +89,16 @@ def save_to_index(ai_data, video):
             <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1,510 ▲</div></div>
             <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$4,525</div></div>
             <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">31.595</div></div>
+            
             <div class="card"><div class="card-label">美國聯準會利率 (Fed)</div><div class="card-val" style="color:#a78bfa">4.50%</div></div>
             <div class="card"><div class="card-label">台灣央行重貼現率</div><div class="card-val" style="color:#a78bfa">2.00%</div></div>
+            <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">0.2150</div></div>
+            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$98,450</div></div>
         </div>
 
         <div class="panel">
-            <h3 style="color:var(--accent); font-size:16px;">📊 年度資產趨勢 (台股 vs 黃金)</h3>
-            <div style="height:280px;"><canvas id="mainChart"></canvas></div>
+            <h3 style="color:var(--accent); font-size:16px;">📊 全球關鍵資產趨勢分析</h3>
+            <div style="height:320px;"><canvas id="mainChart"></canvas></div>
         </div>
 
         <div class="panel">
@@ -115,11 +113,21 @@ def save_to_index(ai_data, video):
             data: {{
                 labels: ['Q1', 'Q2', 'Q3', '2025Q4'],
                 datasets: [
-                    {{ label: '台股 (%)', data: [10, 25, 40, 65.8], borderColor: '#00e5ff', backgroundColor: 'rgba(0,229,255,0.1)', fill: true, tension: 0.4 }},
-                    {{ label: '黃金 (%)', data: [15, 35, 55, 72], borderColor: '#fbbf24', borderDash: [5,5], tension: 0.4 }}
+                    {{ label: '台股 (%)', data: [10, 25, 40, 65.8], borderColor: '#00e5ff', tension: 0.4, borderWidth: 3 }},
+                    {{ label: '黃金 (%)', data: [15, 35, 55, 72], borderColor: '#fbbf24', tension: 0.4, borderWidth: 2 }},
+                    {{ label: '比特幣 (%)', data: [5, 45, 85, 120], borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, borderWidth: 2 }},
+                    {{ label: '美債殖利率 (%)', data: [3.8, 4.2, 4.4, 4.5], borderColor: '#a78bfa', tension: 0.4, borderWidth: 2 }}
                 ]
             }},
-            options: {{ maintainAspectRatio: false, plugins: {{ legend: {{ labels: {{ color: '#94a3b8' }} }} }}, scales: {{ y: {{ ticks: {{ color: '#64748b' }}, grid: {{ color: 'rgba(255,255,255,0.05)' }} }}, x: {{ ticks: {{ color: '#64748b' }}, grid: {{ display: false }} }} }} }}
+            options: {{ 
+                maintainAspectRatio: false, 
+                interaction: {{ mode: 'index', intersect: false }},
+                plugins: {{ legend: {{ position: 'bottom', labels: {{ color: '#94a3b8' }} }} }}, 
+                scales: {{ 
+                    y: {{ ticks: {{ color: '#64748b' }}, grid: {{ color: 'rgba(255,255,255,0.05)' }} }}, 
+                    x: {{ ticks: {{ color: '#64748b' }}, grid: {{ display: false }} }} 
+                }} 
+            }}
         }});
     </script>
 </body>
