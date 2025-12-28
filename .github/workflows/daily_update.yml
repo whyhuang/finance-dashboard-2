@@ -20,9 +20,8 @@ jobs:
         with:
           python-version: '3.9'
           
-      - name: 安裝必要工具 (關鍵修復點)
-        run: pip install requests yfinance
-        # 注意這裡：必須同時有 requests 和 yfinance
+     - name: 安裝必要工具
+        run: pip install requests yfinance pandas
 
       - name: 執行自動更新腳本
         env:
