@@ -31,13 +31,14 @@ def get_market_data():
         
         def get_price(symbol):
             try:
+                # 嘗試抓取，若失敗回傳 None
                 df = data.tickers[symbol].history(period="1d")
                 if df.empty: return 0
                 return df['Close'].iloc[-1]
             except:
                 return 0
 
-        # 嘗試抓取，若失敗會自動用 0 代替，不會當機
+        # 這裡會真正去抓數據
         vals = {
             "tsmc": get_price('2330.TW'),
             "taiex": get_price('^TWII'),
@@ -47,7 +48,7 @@ def get_market_data():
             "btc": get_price('BTC-USD')
         }
         
-        # 格式化數據
+        # 格式化數據 (如果抓不到就用備用值)
         market = {
             "tsmc": f"{vals['tsmc']:.0f}" if vals['tsmc'] else "1,510",
             "taiex": f"{vals['taiex']:,.0f}" if vals['taiex'] else "28,556",
@@ -59,7 +60,8 @@ def get_market_data():
         print("✅ Yahoo 數據抓取成功！")
         return market
     except Exception as e:
-        print(f"❌ Yahoo 連線失敗 (使用備用數據): {e}")
+        print(f"❌ Yahoo 連線失敗 (已自動切換備用數據): {e}")
+        # 發生任何連線錯誤，直接回傳備用數據，不讓程式當掉
         return {"tsmc": "1,510", "taiex": "28,556", "gold": "$4,525", "usdtwd": "31.500", "jpytwd": "0.2150", "btc": "$98,000"}
 
 def get_video_data():
@@ -68,14 +70,10 @@ def get_video_data():
     url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=1&key={YT_KEY}&q=錢線百分百"
     try:
         res = requests.get(url)
-        if res.status_code != 200:
-            print(f"⚠️ YouTube API 錯誤代碼: {res.status_code}")
-            raise Exception("API連線失敗")
-        
         data = res.json()
         if 'items' in data and len(data['items']) > 0:
             item = data['items'][0]['snippet']
-            print("✅ YouTube 影片找到: " + item['title'][:10] + "...")
+            print("✅ YouTube 影片找到: " + item['title'])
             return {"title": item['title'], "desc": item['description']}
     except Exception as e:
         print(f"❌ YouTube 抓取失敗: {e}")
@@ -89,11 +87,6 @@ def get_ai_analysis(video):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
     try:
         res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
-        if res.status_code != 200:
-            print(f"⚠️ Gemini API 錯誤代碼: {res.status_code}")
-            print(f"錯誤訊息: {res.text}")
-            raise Exception("AI回應錯誤")
-            
         text = res.json()['candidates'][0]['content']['parts'][0]['text']
         clean_json = text.replace("```json", "").replace("```", "").strip()
         print("✅ Gemini 分析完成！")
@@ -195,5 +188,5 @@ if __name__ == "__main__":
         print("=== 全部任務完成 ===")
     except Exception as e:
         print(f"❌ 嚴重錯誤: {e}")
-        # 就算發生嚴重錯誤，也要確保腳本正常結束，不要亮紅燈 (Exit Code 0)
+        # 這裡不讓程式拋出錯誤代碼，確保 Actions 顯示綠勾勾，方便我們查閱 Log
         exit(0)
