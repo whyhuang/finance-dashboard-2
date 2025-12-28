@@ -3,7 +3,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v9.2 | Diagnostic</title>
+    <title>Jason TV v9.3 | Final Fix</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -12,17 +12,15 @@
         header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; }
         .logo { font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5); }
         .container { max-width: 1200px; margin: 80px auto; padding: 0 20px; }
-        .hero { background: linear-gradient(145deg, #161b25, #0b0e14); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 0 30px rgba(0,229,255,0.05); }
+        .hero { background: linear-gradient(145deg, #161b25, #0b0e14); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; margin-bottom: 30px; }
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; transition: 0.3s; }
-        .card:hover { border-color: var(--accent); transform: translateY(-3px); }
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
         .card-val { font-family: 'JetBrains Mono'; font-size: 26px; font-weight: 700; color: var(--text); margin-top: 8px; }
         .card-label { font-size: 12px; color: #94a3b8; }
         .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { text-align: left; color: #64748b; font-size: 12px; border-bottom: 1px solid var(--border); padding: 10px; }
         td { padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-        /* 錯誤日誌區塊 */
         .debug-box { margin-top: 50px; padding: 20px; background: #2a0a0a; border: 1px solid #ff4d4d; color: #ff9999; font-family: monospace; font-size: 12px; border-radius: 8px; }
     </style>
 </head>
@@ -33,18 +31,18 @@
     </header>
     <div class="container">
         <div class="hero">
-            <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：⚠️ 系統連線診斷中...)</h2>
-            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>目前顯示的是【系統備用數據】</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>請查看網頁底部的錯誤日誌</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>確認 API 金鑰與套件安裝狀態</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>自動化運作正常，唯連線失敗</div></div>
+            <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：錢線百分百 (備用))</h2>
+            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>系統連線中，顯示備用數據</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>請檢查網頁底部的錯誤日誌</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>V9.3 修正版測試中</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>等待 API 連線恢復</div></div>
         </div>
         <div class="grid">
             <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">28,556 ▲</div></div>
-            <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1,510 ▲</div></div>
-            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$4,525</div></div>
-            <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">31.595</div></div>
+            <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1510 ▲</div></div>
+            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$0</div></div>
+            <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">31.379</div></div>
             <div class="card"><div class="card-label">美國聯準會利率 (Fed)</div><div class="card-val" style="color:#a78bfa">4.50%</div></div>
             <div class="card"><div class="card-label">台灣央行重貼現率</div><div class="card-val" style="color:#a78bfa">2.00%</div></div>
-            <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">0.2150</div></div>
-            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$98,450 (備用)</div></div>
+            <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">0.2022</div></div>
+            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$87,899</div></div>
         </div>
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">📊 全球關鍵資產趨勢分析 (示意)</h3>
@@ -52,27 +50,24 @@
         </div>
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">🔥 錢線熱門追蹤</h3>
-            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>ERROR</td><td>數據連線失敗</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>請檢查日誌</td></tr></tbody></table>
+            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>INFO</td><td>系統維護</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>API連線中</td></tr></tbody></table>
         </div>
-
         <div class="debug-box">
             <h3>🔧 系統診斷日誌 (System Logs)</h3>
-            Step 1: 連線 Yahoo Finance...<br>❌ Yahoo 未知錯誤: unsupported operand type(s) for |: 'types.GenericAlias' and 'types.GenericAlias'<br>Step 2: 連線 YouTube...<br>❌ YouTube API 拒絕連線: 403<br>Step 3: 連線 Gemini AI...<br>❌ Gemini API 錯誤: 404 - {
+            Step 1: 連線 Yahoo Finance...<br>✅ Yahoo 數據抓取成功<br>Step 2: 連線 YouTube...<br>Step 3: 連線 Gemini AI...<br>❌ Gemini 錯誤 404: {
   "error": {
     "code": 404,
-    "message": "mo<br>Step 4: 生成 index.html ...
+    "message": "models/gemini-pro is not found for API version v1bet<br>Step 4: 生成 index.html ...
         </div>
     </div>
     <script>
-        // 即時時鐘腳本
         function updateClock() {
             const now = new Date();
-            const timeString = now.toLocaleString('zh-TW', { hour12: false });
-            document.getElementById('clock').innerHTML = '● LIVE | ' + timeString;
+            document.getElementById('clock').innerHTML = '● LIVE | ' + now.toLocaleString('zh-TW', { hour12: false });
         }
         setInterval(updateClock, 1000);
         updateClock();
-
+        
         new Chart(document.getElementById('mainChart'), {
             type: 'line',
             data: {
