@@ -4,58 +4,123 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV | 專業財經監控終端</title>
+    <title>Jason TV v7.0 | AI 旗艦終端</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #05070a; --card: #11151c; --accent: #00e5ff; --up: #ff4d4d; --down: #00ff88; --text: #e2e8f0; --border: #232a35; }
-        * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); overflow-x: hidden; }
-        header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17, 21, 28, 0.98); backdrop-filter: blur(15px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; }
-        .logo { font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0, 229, 255, 0.5); }
-        .market-status { font-family: 'JetBrains Mono'; font-size: 11px; color: var(--down); }
-        .container { max-width: 1200px; margin: 80px auto 40px; padding: 0 20px; }
-        .hero-summary { background: linear-gradient(145deg, #161b25, #0b0e14); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 0 20px rgba(0, 229, 255, 0.1); }
-        .summary-item { margin-bottom: 12px; font-size: 15px; line-height: 1.6; padding-left: 20px; position: relative; color: #cbd5e1; }
-        .summary-item::before { content: '▶'; position: absolute; left: 0; color: var(--accent); font-size: 12px; top: 3px; }
+        :root { --bg: #05070a; --card: #11151c; --accent: #00e5ff; --up: #ff4d4d; --text: #e2e8f0; --border: #232a35; }
+        * { box-sizing: border-box; }
+        body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 60px; }
+        
+        /* 導航欄 */
+        header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; }
+        .logo { font-size: 24px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 15px rgba(0,229,255,0.4); }
+        
+        .container { max-width: 1200px; margin: 80px auto 0; padding: 0 20px; }
+        
+        /* 摘要區 */
+        .hero-summary { background: linear-gradient(145deg, #161b25, #0b0e14); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; margin-bottom: 30px; box-shadow: 0 0 20px rgba(0,229,255,0.1); }
+        .summary-title { color: var(--accent); font-size: 18px; margin-bottom: 15px; font-weight: bold; }
+        .summary-item { margin-bottom: 10px; font-size: 15px; padding-left: 20px; position: relative; color: #cbd5e1; line-height: 1.6; }
+        .summary-item::before { content: '▶'; position: absolute; left: 0; color: var(--accent); top: 4px; }
+        
+        /* 數據卡片 */
         .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 30px; }
         .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-        .card-main { font-family: 'JetBrains Mono'; font-size: 26px; font-weight: 700; display: flex; align-items: baseline; gap: 8px; }
-        .chart-panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; min-height: 380px; position: relative; }
-        @media (max-width: 600px) { .logo { font-size: 20px; } .container { margin-top: 75px; } .card-main { font-size: 22px; } }
+        .card-val { font-family: 'JetBrains Mono'; font-size: 28px; font-weight: 700; margin-top: 8px; }
+        
+        /* 表格與圖表區 */
+        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
+        .panel-h { color: var(--accent); font-size: 16px; margin-bottom: 20px; font-weight: bold; border-left: 3px solid var(--accent); padding-left: 10px; }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; color: #64748b; padding: 12px 8px; border-bottom: 1px solid var(--border); font-size: 13px; }
+        td { padding: 15px 8px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 15px; }
     </style>
 </head>
 <body>
     <header>
         <div class="logo">JASON TV</div>
-        <div class="market-status">● AUTO LIVE | 2025-12-28</div>
+        <div style="font-size:12px; color:#00ff88;">● AUTO LIVE | 2025-12-28 11:47</div>
     </header>
+
     <div class="container">
         <div class="hero-summary">
-            <h2 style="color:var(--accent); margin-bottom:15px;">📺 錢線百分百・自動化摘要</h2>
-            <div class="summary-item"><b>外資休假，內資當道：</b> 台股攻克歷史高點，OTC 指數領先過高。</div>
-            <div class="summary-item"><b>金價創歷史奇蹟：</b> 成功突破 <b>$4,525</b> 大關，反映避險瘋狂。</div>
+            <div class="summary-title">📺 AI 智能摘要 (來源: 錢線百分百 (備用源))</div>
+            <div class="summary-item">外資休假內資主導，指數高檔震盪</div><div class="summary-item">AI 伺服器需求續強，供應鏈受惠</div><div class="summary-item">元月行情啟動，關注中小型補漲股</div><div class="summary-item">避險資金推升金價，留意回檔風險</div>
         </div>
+
         <div class="grid">
-            <div class="card"><div style="color:#94a3b8; font-size:12px;">加權指數</div><div class="card-main" style="color:var(--up);">28,556 ▲</div></div>
-            <div class="card"><div style="color:#94a3b8; font-size:12px;">台積電 (2330)</div><div class="card-main" style="color:var(--up);">1,510 ▲</div></div>
-            <div class="card"><div style="color:#94a3b8; font-size:12px;">黃金價格 (GOLD)</div><div class="card-main" style="color:#fbbf24;">$4,525</div></div>
-            <div class="card"><div style="color:#94a3b8; font-size:12px;">美元/台幣</div><div class="card-main" style="color:white;">31.595</div></div>
+            <div class="card">
+                <div style="font-size:12px; color:#94a3b8;">加權指數 TAIEX</div>
+                <div class="card-val" style="color:var(--up);">28,556 ▲</div>
+            </div>
+            <div class="card">
+                <div style="font-size:12px; color:#94a3b8;">台積電 TSMC</div>
+                <div class="card-val" style="color:var(--up);">1,510 ▲</div>
+            </div>
+            <div class="card">
+                <div style="font-size:12px; color:#94a3b8;">黃金 (GOLD)</div>
+                <div class="card-val" style="color:#fbbf24;">$4,525</div>
+            </div>
+            <div class="card">
+                <div style="font-size:12px; color:#94a3b8;">美元/台幣</div>
+                <div class="card-val">31.595</div>
+            </div>
         </div>
-        <div class="chart-panel">
-            <canvas id="mainChart"></canvas>
+
+        <div class="panel">
+            <div class="panel-h">📊 年度資產趨勢分析</div>
+            <div style="height: 300px; width: 100%;">
+                <canvas id="mainChart"></canvas>
+            </div>
+        </div>
+
+        <div class="panel">
+            <div class="panel-h">🔥 錢線熱門股追蹤</div>
+            <table>
+                <thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead>
+                <tbody>
+        <tr>
+            <td style="font-weight:bold; color:#00e5ff;">2330</td>
+            <td>台積電</td>
+            <td style="color:#ff4d4d;">看多</td>
+            <td style="color:#94a3b8; font-size:13px;">先進製程滿載</td>
+        </tr>
+        <tr>
+            <td style="font-weight:bold; color:#00e5ff;">2454</td>
+            <td>聯發科</td>
+            <td style="color:#ff4d4d;">看多</td>
+            <td style="color:#94a3b8; font-size:13px;">天璣晶片熱銷</td>
+        </tr>
+        <tr>
+            <td style="font-weight:bold; color:#00e5ff;">2317</td>
+            <td>鴻海</td>
+            <td style="color:#ff4d4d;">看多</td>
+            <td style="color:#94a3b8; font-size:13px;">GB200 出貨順暢</td>
+        </tr></tbody>
+            </table>
         </div>
     </div>
+
     <script>
         const ctx = document.getElementById('mainChart').getContext('2d');
+        const gradient = ctx.createLinearGradient(0, 0, 0, 400);
+        gradient.addColorStop(0, 'rgba(0, 229, 255, 0.2)');
+        gradient.addColorStop(1, 'rgba(0, 229, 255, 0)');
+        
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: ['Q1', 'Q2', 'Q3', 'Q4'],
-                datasets: [{ label: '台股 (%)', data: [10, 25, 40, 65.8], borderColor: '#00e5ff', tension: 0.4 }]
+                labels: ['Q1', 'Q2', 'Q3', '2025Q4'],
+                datasets: [
+                    { label: '台股 (%)', data: [10, 25, 40, 65.8], borderColor: '#00e5ff', backgroundColor: gradient, fill: true, tension: 0.4 },
+                    { label: '黃金 (%)', data: [15, 35, 55, 72], borderColor: '#fbbf24', borderDash: [5,5], tension: 0.4 }
+                ]
             },
-            options: { responsive: true, maintainAspectRatio: false }
+            options: { maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: '#94a3b8' } } }, scales: { y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: '#64748b' }, grid: { display: false } } } }
         });
     </script>
 </body>
 </html>
+    
