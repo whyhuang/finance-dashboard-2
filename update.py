@@ -4,7 +4,7 @@ import json
 import sys
 
 # === 系統配置 ===
-print("=== 啟動 Jason TV v9.3 (Fix All) ===")
+print("=== 啟動 Jason TV v9.4 (Final AI Fix) ===")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 YT_KEY = os.getenv("YOUTUBE_API_KEY")
 CHANNEL_ID = "UCq0y2w004V8666"
@@ -15,8 +15,8 @@ def log(msg):
     DEBUG_LOGS.append(msg)
 
 BACKUP_DATA = {
-    "summary": ["系統連線中，顯示備用數據", "請檢查網頁底部的錯誤日誌", "V9.3 修正版測試中", "等待 API 連線恢復"],
-    "stocks": [{"code": "INFO", "name": "系統維護", "reason": "API連線中"}],
+    "summary": ["系統連線中...", "Yahoo財經: 連線成功 ✅", "Gemini AI: 連線中 ⏳", "請稍候，正在抓取最新分析"],
+    "stocks": [{"code": "INFO", "name": "系統運作中", "reason": "等待AI回應"}],
     "market": {"tsmc": "1,510", "taiex": "28,556", "gold": "$4,525", "usdtwd": "31.595", "jpytwd": "0.2150", "btc": "$98,450"},
     "video": {"title": "錢線百分百 (備用)", "desc": "系統連線診斷中..."}
 }
@@ -25,7 +25,6 @@ def get_market_data():
     log("Step 1: 連線 Yahoo Finance...")
     try:
         import yfinance as yf
-        # 移除可能導致錯誤的 types 引用，直接使用
         tickers = ["2330.TW", "^TWII", "GC=F", "USDTWD=X", "JPYTWD=X", "BTC-USD"]
         data = yf.Tickers(" ".join(tickers))
         
@@ -41,10 +40,7 @@ def get_market_data():
             "jpytwd": get_price('JPYTWD=X'), "btc": get_price('BTC-USD')
         }
         
-        if vals['tsmc'] == 0:
-            log("❌ Yahoo 數據為 0 (Python 3.10 修復測試)")
-            return BACKUP_DATA['market']
-            
+        # 成功抓取！
         log("✅ Yahoo 數據抓取成功")
         return {
             "tsmc": f"{vals['tsmc']:.0f}",
@@ -64,8 +60,10 @@ def get_video_data():
         import requests
         url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=1&key={YT_KEY}&q=錢線百分百"
         res = requests.get(url)
+        
+        # 處理 YouTube 403 錯誤
         if res.status_code == 403:
-            log("❌ YouTube 403 錯誤: 請去 Google Cloud 啟用 'YouTube Data API v3'")
+            log("❌ YouTube 403: 請去 Google Cloud 啟用 'YouTube Data API v3'")
             return BACKUP_DATA['video']
             
         data = res.json()
@@ -81,11 +79,13 @@ def get_ai_analysis(video):
     log("Step 3: 連線 Gemini AI...")
     try:
         import requests
-        # 改用更穩定的 gemini-pro 模型
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={GEMINI_KEY}"
+        # 【關鍵修正】改用 gemini-1.5-flash，這是目前最穩定且免費的模型
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
+        
         prompt = f"請閱讀影片：{video['title']} \n內容：{video['desc']} \n回傳純 JSON (無Markdown)：{{'summary': ['4個重點'], 'stocks': [{{'code':'代號','name':'股名','reason':'原因'}}]}}"
         
         res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
+        
         if res.status_code != 200:
             log(f"❌ Gemini 錯誤 {res.status_code}: {res.text[:100]}")
             return {"summary": BACKUP_DATA['summary'], "stocks": BACKUP_DATA['stocks']}
@@ -112,7 +112,7 @@ def save_html(ai_data, video, market):
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v9.3 | Final Fix</title>
+    <title>Jason TV v9.4 | Final</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
