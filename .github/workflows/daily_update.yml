@@ -8,7 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:      # 這裡直接強制開啟寫入權限，雙重保險
+    permissions:
       contents: write
       
     steps:
@@ -20,8 +20,8 @@ jobs:
         with:
           python-version: '3.9'
           
-      - name: 安裝必要工具 (修正點)
-        run: pip install requests
+      - name: 安裝必要工具 (新增 yfinance)
+        run: pip install requests yfinance
 
       - name: 執行自動更新腳本
         env:
