@@ -3,10 +3,10 @@ name: Jason TV Daily Auto Update
 on:
   schedule:
     - cron: '30 1 * * *' # 台北時間 09:30
-  workflow_dispatch:      # 允許手動執行
+  workflow_dispatch:
 
 permissions:
-  contents: write         # 確保有寫入權限
+  contents: write
 
 jobs:
   build:
@@ -16,16 +16,16 @@ jobs:
       - name: 1. 下載程式碼
         uses: actions/checkout@v3
       
-      - name: 2. 設定 Python 環境
+      - name: 2. 設定 Python 環境 (升級為 3.10)
         uses: actions/setup-python@v4
         with:
-          python-version: '3.9'
+          python-version: '3.10' 
           
-      - name: 3. 安裝所有必要套件 (含 lxml)
+      - name: 3. 安裝必要套件
         run: |
           pip install requests yfinance pandas lxml
           
-      - name: 4. 執行 Jason TV v9 主程式
+      - name: 4. 執行 Jason TV v9.3
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
@@ -36,5 +36,5 @@ jobs:
           git config --global user.name "Jason-TV-Bot"
           git config --global user.email "bot@jason.tv"
           git add index.html
-          git commit -m "Auto update v9: $(date)" || echo "No changes to commit"
+          git commit -m "Auto update v9.3: $(date)" || echo "No changes to commit"
           git push
