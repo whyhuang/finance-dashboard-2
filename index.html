@@ -3,7 +3,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v9.1 | Real-Time Dashboard</title>
+    <title>Jason TV v9.2 | Diagnostic</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -22,14 +22,19 @@
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
         th { text-align: left; color: #64748b; font-size: 12px; border-bottom: 1px solid var(--border); padding: 10px; }
         td { padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
+        /* 錯誤日誌區塊 */
+        .debug-box { margin-top: 50px; padding: 20px; background: #2a0a0a; border: 1px solid #ff4d4d; color: #ff9999; font-family: monospace; font-size: 12px; border-radius: 8px; }
     </style>
 </head>
 <body>
-    <header><div class="logo">JASON TV</div><div style="color:#00ff88; font-size:11px;">● LIVE | 2025-12-28 21:46</div></header>
+    <header>
+        <div class="logo">JASON TV</div>
+        <div style="color:#00ff88; font-size:11px;" id="clock">● LIVE | Connecting...</div>
+    </header>
     <div class="container">
         <div class="hero">
-            <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：錢線百分百 (備用))</h2>
-            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>系統連線中，顯示備用數據</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>請檢查 GitHub Actions Log</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>V9.1 介面測試正常</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>等待下一次自動更新</div></div>
+            <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：⚠️ 系統連線診斷中...)</h2>
+            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>目前顯示的是【系統備用數據】</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>請查看網頁底部的錯誤日誌</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>確認 API 金鑰與套件安裝狀態</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>自動化運作正常，唯連線失敗</div></div>
         </div>
         <div class="grid">
             <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">28,556 ▲</div></div>
@@ -39,7 +44,7 @@
             <div class="card"><div class="card-label">美國聯準會利率 (Fed)</div><div class="card-val" style="color:#a78bfa">4.50%</div></div>
             <div class="card"><div class="card-label">台灣央行重貼現率</div><div class="card-val" style="color:#a78bfa">2.00%</div></div>
             <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">0.2150</div></div>
-            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$98,450</div></div>
+            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$98,450 (備用)</div></div>
         </div>
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">📊 全球關鍵資產趨勢分析 (示意)</h3>
@@ -47,10 +52,27 @@
         </div>
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">🔥 錢線熱門追蹤</h3>
-            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>2330</td><td>台積電</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>系統預設值</td></tr></tbody></table>
+            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>ERROR</td><td>數據連線失敗</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>請檢查日誌</td></tr></tbody></table>
+        </div>
+
+        <div class="debug-box">
+            <h3>🔧 系統診斷日誌 (System Logs)</h3>
+            Step 1: 連線 Yahoo Finance...<br>❌ Yahoo 未知錯誤: unsupported operand type(s) for |: 'types.GenericAlias' and 'types.GenericAlias'<br>Step 2: 連線 YouTube...<br>❌ YouTube API 拒絕連線: 403<br>Step 3: 連線 Gemini AI...<br>❌ Gemini API 錯誤: 404 - {
+  "error": {
+    "code": 404,
+    "message": "mo<br>Step 4: 生成 index.html ...
         </div>
     </div>
     <script>
+        // 即時時鐘腳本
+        function updateClock() {
+            const now = new Date();
+            const timeString = now.toLocaleString('zh-TW', { hour12: false });
+            document.getElementById('clock').innerHTML = '● LIVE | ' + timeString;
+        }
+        setInterval(updateClock, 1000);
+        updateClock();
+
         new Chart(document.getElementById('mainChart'), {
             type: 'line',
             data: {
