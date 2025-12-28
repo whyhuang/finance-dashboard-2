@@ -34,7 +34,7 @@ def get_latest_video_data():
 def analyze_with_gemini(video_data):
     """請 Gemini 讀取影片資訊，並吐出『JSON 格式』的數據給網頁用"""
     
-    # 這是給 AI 的精確指令
+    # 這是給 AI 的精確指令，要求它吐出表格需要的資料
     prompt = f"""
     你是專業的財經數據分析師。請閱讀以下 YouTube 影片資訊，並提取關鍵數據生成 JSON 格式回應。
     
@@ -102,7 +102,7 @@ def generate_html(ai_data, video_data):
     # 準備時間
     now_str = datetime.datetime.now().strftime("%Y-%m-%d %H:%M")
 
-    # 完整的 v5.2 HTML 代碼
+    # 完整的 v5.2 HTML 代碼 (這是你的印鈔模具)
     html = f"""
 <!DOCTYPE html>
 <html lang="zh-TW">
