@@ -20,10 +20,8 @@ jobs:
       - name: 執行自動更新腳本
         run: python update.py
         
-      - name: 將更新推送到 GitHub
-        run: |
-          git config --global user.name "Jason-TV-Bot"
-          git config --global user.email "bot@jason.tv"
-          git add index.html
-          git commit -m "Auto update: $(date)" || echo "No changes to commit"
-          git push
+      - - name: 執行自動更新腳本
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: python update.py
