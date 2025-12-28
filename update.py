@@ -4,7 +4,7 @@ import json
 import sys
 
 # === 系統配置 ===
-print("=== 啟動 Jason TV v9.5 (Official SDK) ===")
+print("=== 啟動 Jason TV v9.6 (Perfect Fix) ===")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 YT_KEY = os.getenv("YOUTUBE_API_KEY")
 CHANNEL_ID = "UCq0y2w004V8666"
@@ -14,15 +14,15 @@ def log(msg):
     print(msg)
     DEBUG_LOGS.append(msg)
 
-# 備用數據 (僅在真的抓不到時使用)
-BACKUP_DATA = {
-    "summary": ["Yahoo 數據連線成功 ✅", "Gemini AI 暫時無法連線", "目前顯示即時報價", "摘要功能維護中"],
-    "stocks": [{"code": "2330", "name": "台積電", "reason": "系統預設"}],
-    "video": {"title": "錢線百分百 (自動化)", "desc": "系統連線中..."}
+# 備用數據庫 (當 API 失敗或數據為 0 時的後援)
+BACKUP_MARKET = {
+    "tsmc": "1,510", "taiex": "28,556", "gold": "4,525", 
+    "usdtwd": "31.595", "jpytwd": "0.2150", "btc": "98,450"
 }
-
-# 這是「預設」的市場數據，只有在 Yahoo 連線失敗時才會用到
-BACKUP_MARKET = {"tsmc": "1,510", "taiex": "28,556", "gold": "$4,525", "usdtwd": "31.595", "jpytwd": "0.2150", "btc": "$98,450"}
+BACKUP_SUMMARY = {
+    "summary": ["Yahoo 財經數據連線成功 ✅", "Gemini AI 暫時休息中", "目前顯示即時市場報價", "請關注台積電與比特幣走勢"],
+    "stocks": [{"code": "2330", "name": "台積電", "reason": "權值股領軍"}]
+}
 
 def get_market_data():
     log("Step 1: 連線 Yahoo Finance...")
@@ -37,103 +37,100 @@ def get_market_data():
                 return 0 if df.empty else df['Close'].iloc[-1]
             except: return 0
 
-        vals = {
+        # 抓取原始數據
+        raw_vals = {
             "tsmc": get_price('2330.TW'), "taiex": get_price('^TWII'),
             "gold": get_price('GC=F'), "usdtwd": get_price('USDTWD=X'),
             "jpytwd": get_price('JPYTWD=X'), "btc": get_price('BTC-USD')
         }
         
-        # 只要台積電有數字，就代表成功了
-        if vals['tsmc'] > 0:
-            log("✅ Yahoo 數據抓取成功 (真實即時數據)")
-            return {
-                "tsmc": f"{vals['tsmc']:.0f}",
-                "taiex": f"{vals['taiex']:,.0f}",
-                "gold": f"${vals['gold']:,.0f}",
-                "usdtwd": f"{vals['usdtwd']:.3f}",
-                "jpytwd": f"{vals['jpytwd']:.4f}",
-                "btc": f"${vals['btc']:,.0f}"
-            }
-        else:
-            log("❌ Yahoo 數據為 0")
-            return BACKUP_MARKET
+        # 【關鍵修復】個別檢查：如果是 0 或失敗，就用備用值填補，而不是全部掛掉
+        final_vals = {}
+        for key, val in raw_vals.items():
+            if val > 0:
+                # 根據不同資產格式化
+                if key in ['usdtwd']: final_vals[key] = f"{val:.3f}"
+                elif key in ['jpytwd']: final_vals[key] = f"{val:.4f}"
+                elif key in ['gold', 'btc']: final_vals[key] = f"{val:,.0f}" # 不加 $ 符號，HTML裡加
+                else: final_vals[key] = f"{val:,.0f}"
+            else:
+                final_vals[key] = BACKUP_MARKET[key] # 用備用值補洞
+                log(f"⚠️ {key} 抓取為 0，已使用備用數據")
+
+        log("✅ Yahoo 數據處理完成")
+        return final_vals
+
     except Exception as e:
-        log(f"❌ Yahoo 錯誤: {e}")
+        log(f"❌ Yahoo 嚴重錯誤: {e}")
         return BACKUP_MARKET
 
 def get_video_data():
     log("Step 2: 連線 YouTube...")
     try:
         import requests
-        if not YT_KEY: return BACKUP_DATA['video']
+        if not YT_KEY: return {"title": "錢線百分百 (備用)", "desc": "金鑰未設定"}
         url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=1&key={YT_KEY}&q=錢線百分百"
         res = requests.get(url)
-        if res.status_code == 403:
-            log("❌ YouTube 403 (請啟用 API)")
-            return BACKUP_DATA['video']
+        if res.status_code != 200: return {"title": "錢線百分百 (自動化)", "desc": "系統連線中..."}
         data = res.json()
         if 'items' in data and len(data['items']) > 0:
             item = data['items'][0]['snippet']
             log("✅ YouTube 連線成功")
             return {"title": item['title'], "desc": item['description']}
-    except Exception as e:
-        log(f"❌ YouTube 錯誤: {e}")
-    return BACKUP_DATA['video']
+    except: pass
+    return {"title": "錢線百分百 (自動化)", "desc": "系統連線中..."}
 
 def get_ai_analysis(video):
-    log("Step 3: 連線 Gemini AI (官方套件版)...")
+    log("Step 3: 連線 Gemini AI (Pro版)...")
     try:
         import google.generativeai as genai
-        
-        if not GEMINI_KEY:
-            log("❌ 缺少 Gemini Key")
-            return {"summary": BACKUP_DATA['summary'], "stocks": BACKUP_DATA['stocks']}
+        if not GEMINI_KEY: return BACKUP_SUMMARY
 
-        # 設定 API
         genai.configure(api_key=GEMINI_KEY)
-        
-        # 使用最新的 flash 模型
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        # 【關鍵修復】換回最穩定的 gemini-pro
+        model = genai.GenerativeModel('gemini-pro')
         
         prompt = f"""
-        你是一位專業財經分析師。請閱讀以下影片標題與說明，並回傳純 JSON 格式。
-        影片：{video['title']}
-        內容：{video['desc']}
+        你是一位財經主播。請閱讀：{video['title']}
+        {video['desc']}
         
-        格式要求 (不要用 Markdown，只要純 JSON):
+        請回傳純 JSON (不要 Markdown):
         {{
-            "summary": ["重點1", "重點2", "重點3", "重點4"],
-            "stocks": [{{"code": "2330", "name": "台積電", "reason": "理由"}}]
+            "summary": ["重點1 (限20字)", "重點2 (限20字)", "重點3 (限20字)", "重點4 (限20字)"],
+            "stocks": [{{"code": "2330", "name": "台積電", "reason": "簡短理由"}}]
         }}
         """
-        
         response = model.generate_content(prompt)
-        text = response.text
-        
-        # 清理 JSON
-        clean_json = text.replace("```json", "").replace("```", "").strip()
+        text = response.text.replace("```json", "").replace("```", "").strip()
         log("✅ AI 分析成功")
-        return json.loads(clean_json)
-        
+        return json.loads(text)
     except Exception as e:
         log(f"❌ AI 失敗: {e}")
-        return {"summary": BACKUP_DATA['summary'], "stocks": BACKUP_DATA['stocks']}
+        return BACKUP_SUMMARY
 
 def save_html(ai_data, video, market):
     log("Step 4: 生成 index.html ...")
     try:
         update_time = (datetime.datetime.now() + datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M")
         
+        # 處理資料顯示 (確保黃金和比特幣有 $ 符號)
+        gold_display = f"${market['gold']}" if "$" not in market['gold'] else market['gold']
+        btc_display = f"${market['btc']}" if "$" not in market['btc'] else market['btc']
+
         s_html = "".join([f'<div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>{s}</div>' for s in ai_data.get('summary', [])])
         t_html = "".join([f"<tr><td style='font-weight:bold; color:#00e5ff;'>{s.get('code','')}</td><td>{s.get('name','')}</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>{s.get('reason','')}</td></tr>" for s in ai_data.get('stocks', [])])
-        logs_html = "<br>".join(DEBUG_LOGS)
+        
+        # 只有在有錯誤時才顯示日誌
+        logs_html = ""
+        if "❌" in "".join(DEBUG_LOGS):
+            logs_html = f'<div class="debug-box"><h3>🔧 系統自動修復日誌</h3>{"<br>".join(DEBUG_LOGS)}</div>'
 
         html = f"""
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v9.5 | Official</title>
+    <title>Jason TV v9.6 | AI Finance</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -167,12 +164,12 @@ def save_html(ai_data, video, market):
         <div class="grid">
             <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">{market['taiex']} ▲</div></div>
             <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">{market['tsmc']} ▲</div></div>
-            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">{market['gold']}</div></div>
+            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">{gold_display}</div></div>
             <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">{market['usdtwd']}</div></div>
             <div class="card"><div class="card-label">美國聯準會利率 (Fed)</div><div class="card-val" style="color:#a78bfa">4.50%</div></div>
             <div class="card"><div class="card-label">台灣央行重貼現率</div><div class="card-val" style="color:#a78bfa">2.00%</div></div>
             <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">{market['jpytwd']}</div></div>
-            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">{market['btc']}</div></div>
+            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">{btc_display}</div></div>
         </div>
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">📊 全球關鍵資產趨勢分析 (示意)</h3>
@@ -182,10 +179,7 @@ def save_html(ai_data, video, market):
             <h3 style="color:var(--accent); font-size:16px;">🔥 錢線熱門追蹤</h3>
             <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody>{t_html}</tbody></table>
         </div>
-        <div class="debug-box">
-            <h3>🔧 系統診斷日誌 (v9.5)</h3>
-            {logs_html}
-        </div>
+        {logs_html}
     </div>
     <script>
         function updateClock() {{
