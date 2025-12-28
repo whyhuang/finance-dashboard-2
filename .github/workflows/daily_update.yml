@@ -3,13 +3,13 @@ name: Jason TV Daily Auto Update
 on:
   schedule:
     - cron: '30 1 * * *' # 台北時間 09:30
-  workflow_dispatch:
+  workflow_dispatch:      # 允許手動執行
 
 jobs:
   build:
     runs-on: ubuntu-latest
     permissions:
-      contents: write
+      contents: write     # 給予寫入權限
       
     steps:
       - name: 複製代碼
@@ -20,8 +20,9 @@ jobs:
         with:
           python-version: '3.9'
           
-     - name: 安裝必要工具
+      - name: 安裝必要工具 (關鍵修復)
         run: pip install requests yfinance pandas
+        # 我們多加了 pandas 以防萬一
 
       - name: 執行自動更新腳本
         env:
