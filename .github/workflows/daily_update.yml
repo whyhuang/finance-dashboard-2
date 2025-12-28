@@ -2,17 +2,18 @@ name: Jason TV Daily Auto Update
 
 on:
   schedule:
-    - cron: '30 1 * * *' # 台北時間 09:30
-  workflow_dispatch:      # 允許手動按鈕執行
+    - cron: '30 1 * * *' # 台北時間 09:30 自動執行
+  workflow_dispatch:      # 允許手動按鈕觸發
+
+permissions:
+  contents: write         # 給予機器人寫入權限 (關鍵)
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write     # 賦予寫入權限，這很重要
-      
+    
     steps:
-      - name: 1. 下載您的代碼 (Checkout)
+      - name: 1. 下載程式碼
         uses: actions/checkout@v3
       
       - name: 2. 設定 Python 環境
@@ -20,23 +21,21 @@ jobs:
         with:
           python-version: '3.9'
           
-      - name: 3. 安裝必要套件 (關鍵修正點)
-        # 這裡必須明確安裝 yfinance 和 pandas
+      - name: 3. 安裝必要套件 (V9 核心)
         run: |
           python -m pip install --upgrade pip
           pip install requests yfinance pandas
-
-      - name: 4. 執行更新腳本
+          
+      - name: 4. 執行 Jason TV v9 主程式
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
         run: python update.py
         
-      - name: 5. 存檔並發布
+      - name: 5. 發布網站
         run: |
           git config --global user.name "Jason-TV-Bot"
           git config --global user.email "bot@jason.tv"
           git add index.html
-          # 如果沒有變更就不會報錯
-          git commit -m "Auto update: $(date)" || echo "No changes to commit"
+          git commit -m "Auto update v9: $(date)" || echo "No changes to commit"
           git push
