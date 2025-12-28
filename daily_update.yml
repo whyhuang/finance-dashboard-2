@@ -1,0 +1,29 @@
+name: Jason TV Daily Auto Update
+
+on:
+  schedule:
+    - cron: '30 1 * * *' # 台北時間每天 09:30 執行
+  workflow_dispatch: # 允許你隨時手動點擊按鈕來更新
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 複製代碼
+        uses: actions/checkout@v3
+      
+      - name: 設定 Python 環境
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+          
+      - name: 執行自動更新腳本
+        run: python update.py
+        
+      - name: 將更新推送到 GitHub
+        run: |
+          git config --global user.name "Jason-TV-Bot"
+          git config --global user.email "bot@jason.tv"
+          git add index.html
+          git commit -m "Auto update: $(date)" || echo "No changes to commit"
+          git push
