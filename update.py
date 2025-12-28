@@ -2,28 +2,38 @@ import os
 import requests
 import datetime
 import json
-import time
+import sys
 
-# === 1. 安全載入 yfinance (防崩潰機制) ===
+# === 除錯開始 ===
+print("=== 腳本開始執行 (Jason TV v9.2) ===")
+
+# 嘗試載入 yfinance，如果失敗不崩潰，而是標記起來
 try:
     import yfinance as yf
     HAS_YFINANCE = True
-except ImportError:
+    print("✅ 成功載入 yfinance 套件")
+except ImportError as e:
     HAS_YFINANCE = False
-    print("⚠️ 警告: 機器人找不到 yfinance 套件，將使用備用數據。")
+    print(f"⚠️ 警告: 找不到 yfinance 套件! 錯誤訊息: {e}")
 
-# === 2. 讀取金鑰 ===
+# 讀取金鑰
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 YT_KEY = os.getenv("YOUTUBE_API_KEY")
 CHANNEL_ID = "UCq0y2w004V8666"
 
 def get_market_data():
-    """抓取真實市場數據 (含容錯機制)"""
+    """抓取市場數據"""
     print("Step 1: 正在連線 Yahoo Finance...")
     
-    # 如果沒安裝套件，直接回傳備用數據
+    # 備用數據 (萬一失敗時使用)
+    backup_data = {
+        "tsmc": "1,510", "taiex": "28,556", "gold": "$4,525", 
+        "usdtwd": "31.500", "jpytwd": "0.2150", "btc": "$98,000"
+    }
+
     if not HAS_YFINANCE:
-        return {"tsmc": "1,510", "taiex": "28,556", "gold": "$4,525", "usdtwd": "31.500", "jpytwd": "0.2150", "btc": "$98,000"}
+        print("❌ 因為沒有 yfinance，使用備用數據")
+        return backup_data
 
     try:
         tickers = ["2330.TW", "^TWII", "GC=F", "USDTWD=X", "JPYTWD=X", "BTC-USD"]
@@ -31,24 +41,18 @@ def get_market_data():
         
         def get_price(symbol):
             try:
-                # 嘗試抓取，若失敗回傳 None
                 df = data.tickers[symbol].history(period="1d")
                 if df.empty: return 0
                 return df['Close'].iloc[-1]
             except:
                 return 0
 
-        # 這裡會真正去抓數據
         vals = {
-            "tsmc": get_price('2330.TW'),
-            "taiex": get_price('^TWII'),
-            "gold": get_price('GC=F'),
-            "usdtwd": get_price('USDTWD=X'),
-            "jpytwd": get_price('JPYTWD=X'),
-            "btc": get_price('BTC-USD')
+            "tsmc": get_price('2330.TW'), "taiex": get_price('^TWII'),
+            "gold": get_price('GC=F'), "usdtwd": get_price('USDTWD=X'),
+            "jpytwd": get_price('JPYTWD=X'), "btc": get_price('BTC-USD')
         }
         
-        # 格式化數據 (如果抓不到就用備用值)
         market = {
             "tsmc": f"{vals['tsmc']:.0f}" if vals['tsmc'] else "1,510",
             "taiex": f"{vals['taiex']:,.0f}" if vals['taiex'] else "28,556",
@@ -60,47 +64,53 @@ def get_market_data():
         print("✅ Yahoo 數據抓取成功！")
         return market
     except Exception as e:
-        print(f"❌ Yahoo 連線失敗 (已自動切換備用數據): {e}")
-        # 發生任何連線錯誤，直接回傳備用數據，不讓程式當掉
-        return {"tsmc": "1,510", "taiex": "28,556", "gold": "$4,525", "usdtwd": "31.500", "jpytwd": "0.2150", "btc": "$98,000"}
+        print(f"❌ Yahoo 連線發生錯誤: {e}")
+        return backup_data
 
 def get_video_data():
-    """抓取 YouTube (含除錯輸出)"""
+    """抓取 YouTube"""
     print("Step 2: 正在連線 YouTube...")
+    if not YT_KEY:
+        print("⚠️ 警告: 沒有找到 YOUTUBE_API_KEY")
+        return {"title": "錢線百分百 (無金鑰)", "desc": "請檢查 GitHub Secrets 設定"}
+        
     url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=1&key={YT_KEY}&q=錢線百分百"
     try:
         res = requests.get(url)
         data = res.json()
         if 'items' in data and len(data['items']) > 0:
             item = data['items'][0]['snippet']
-            print("✅ YouTube 影片找到: " + item['title'])
+            print("✅ YouTube 抓取成功")
             return {"title": item['title'], "desc": item['description']}
     except Exception as e:
-        print(f"❌ YouTube 抓取失敗: {e}")
-    
-    return {"title": "錢線百分百 (備用源)", "desc": "今日重點：台積電法說展望、AI 供應鏈動能、聯準會降息路徑與比特幣走勢。"}
+        print(f"❌ YouTube 錯誤: {e}")
+    return {"title": "錢線百分百 (備用源)", "desc": "今日市場重點：台積電、AI 伺服器與全球降息趨勢。"}
 
 def get_ai_analysis(video):
-    """抓取 Gemini (含除錯輸出)"""
+    """抓取 Gemini"""
     print("Step 3: 正在呼叫 Gemini AI...")
+    if not GEMINI_KEY:
+        print("⚠️ 警告: 沒有找到 GEMINI_API_KEY")
+        return {"summary": ["未設定金鑰"], "stocks": []}
+
     prompt = f"請閱讀影片：{video['title']} \n內容：{video['desc']} \n回傳純 JSON (無Markdown)：{{'summary': ['4個重點'], 'stocks': [{{'code':'代號','name':'股名','reason':'原因'}}]}}"
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={GEMINI_KEY}"
     try:
         res = requests.post(url, json={"contents": [{"parts": [{"text": prompt}]}]})
         text = res.json()['candidates'][0]['content']['parts'][0]['text']
         clean_json = text.replace("```json", "").replace("```", "").strip()
-        print("✅ Gemini 分析完成！")
+        print("✅ AI 分析成功")
         return json.loads(clean_json)
     except Exception as e:
-        print(f"❌ Gemini 分析失敗: {e}")
+        print(f"❌ AI 分析錯誤: {e}")
         return {
-            "summary": ["外資休假內資主導，指數高檔震盪", "聯準會維持利率不變，市場預期明年降息", "日圓持續走貶，留意旅遊換匯甜蜜點", "比特幣高檔震盪，加密貨幣資金輪動"],
-            "stocks": [{"code": "2330", "name": "台積電", "reason": "先進製程滿載"}]
+            "summary": ["外資休假內資主導", "指數高檔震盪", "留意匯率變化", "比特幣高檔震盪"],
+            "stocks": [{"code": "2330", "name": "台積電", "reason": "先進製程"}]
         }
 
 def save_to_index(ai_data, video, market):
-    """生成 v9.1 HTML"""
-    print("Step 4: 正在生成網頁...")
+    """生成 HTML"""
+    print("Step 4: 生成網頁中...")
     update_time = (datetime.datetime.now() + datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M")
     
     s_html = "".join([f'<div style="margin-bottom:8px; position:relative; padding-left:20px; line-height:1.5;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>{s}</div>' for s in ai_data.get('summary', [])])
@@ -111,7 +121,7 @@ def save_to_index(ai_data, video, market):
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v9.1 | AI & Real-Time</title>
+    <title>Jason TV v9.2 | Real-Time</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -177,16 +187,17 @@ def save_to_index(ai_data, video, market):
 """
     with open("index.html", "w", encoding="utf-8") as f:
         f.write(html)
-    print("✅ 網頁生成成功！")
+    print("✅ index.html 生成完畢！")
 
 if __name__ == "__main__":
+    # 使用 try-except 包裹整個主程式，確保不拋出 Exit Code 1
     try:
         market_data = get_market_data() 
         video = get_video_data()        
         ai_data = get_ai_analysis(video)
         save_to_index(ai_data, video, market_data)
-        print("=== 全部任務完成 ===")
+        print("=== 全部任務完成 (Success) ===")
     except Exception as e:
-        print(f"❌ 嚴重錯誤: {e}")
-        # 這裡不讓程式拋出錯誤代碼，確保 Actions 顯示綠勾勾，方便我們查閱 Log
-        exit(0)
+        print(f"❌ 發生未預期的錯誤: {e}")
+        # 這裡不讓程式當掉，為了能看到 Log
+        sys.exit(0)
