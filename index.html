@@ -3,7 +3,7 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v9.5 | Official</title>
+    <title>Jason TV v9.6 | AI Finance</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -32,17 +32,17 @@
     <div class="container">
         <div class="hero">
             <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：錢線百分百 (自動化))</h2>
-            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>Yahoo 數據連線成功 ✅</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>Gemini AI 暫時無法連線</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>目前顯示即時報價</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>摘要功能維護中</div></div>
+            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>Yahoo 財經數據連線成功 ✅</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>Gemini AI 暫時休息中</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>目前顯示即時市場報價</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>請關注台積電與比特幣走勢</div></div>
         </div>
         <div class="grid">
             <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">28,556 ▲</div></div>
-            <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1510 ▲</div></div>
-            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$0</div></div>
+            <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1,510 ▲</div></div>
+            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$4,525</div></div>
             <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">31.379</div></div>
             <div class="card"><div class="card-label">美國聯準會利率 (Fed)</div><div class="card-val" style="color:#a78bfa">4.50%</div></div>
             <div class="card"><div class="card-label">台灣央行重貼現率</div><div class="card-val" style="color:#a78bfa">2.00%</div></div>
             <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">0.2022</div></div>
-            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$87,930</div></div>
+            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$87,942</div></div>
         </div>
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">📊 全球關鍵資產趨勢分析 (示意)</h3>
@@ -50,12 +50,9 @@
         </div>
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">🔥 錢線熱門追蹤</h3>
-            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>2330</td><td>台積電</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>系統預設</td></tr></tbody></table>
+            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>2330</td><td>台積電</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>權值股領軍</td></tr></tbody></table>
         </div>
-        <div class="debug-box">
-            <h3>🔧 系統診斷日誌 (v9.5)</h3>
-            Step 1: 連線 Yahoo Finance...<br>✅ Yahoo 數據抓取成功 (真實即時數據)<br>Step 2: 連線 YouTube...<br>Step 3: 連線 Gemini AI (官方套件版)...<br>❌ AI 失敗: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.<br>Step 4: 生成 index.html ...
-        </div>
+        <div class="debug-box"><h3>🔧 系統自動修復日誌</h3>Step 1: 連線 Yahoo Finance...<br>⚠️ gold 抓取為 0，已使用備用數據<br>✅ Yahoo 數據處理完成<br>Step 2: 連線 YouTube...<br>Step 3: 連線 Gemini AI (Pro版)...<br>❌ AI 失敗: 404 models/gemini-pro is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.<br>Step 4: 生成 index.html ...</div>
     </div>
     <script>
         function updateClock() {
