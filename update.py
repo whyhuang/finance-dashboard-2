@@ -4,7 +4,7 @@ import json
 import sys
 
 # === 系統配置 ===
-print("=== 啟動 Jason TV v9.7 (Auto-Detect Model) ===")
+print("=== 啟動 Jason TV v9.8 (Debug & Gold Fix) ===")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 YT_KEY = os.getenv("YOUTUBE_API_KEY")
 CHANNEL_ID = "UCq0y2w004V8666"
@@ -16,7 +16,7 @@ def log(msg):
 
 # 備用數據
 BACKUP_DATA = {
-    "summary": ["Yahoo 財經連線成功 ✅", "黃金代碼已修正為現貨", "正在嘗試自動切換 AI 模型...", "請關注比特幣與台積電走勢"],
+    "summary": ["Yahoo 數據連線成功 ✅", "正在診斷黃金與 AI 問題", "請查看下方日誌", "自動化系統運作中"],
     "stocks": [{"code": "2330", "name": "台積電", "reason": "系統預設"}],
     "video": {"title": "錢線百分百 (備用)", "desc": "系統連線中..."}
 }
@@ -25,8 +25,9 @@ def get_market_data():
     log("Step 1: 連線 Yahoo Finance...")
     try:
         import yfinance as yf
-        # 【關鍵修正】改用 XAUUSD=X (現貨黃金)，解決 $0 問題
-        tickers = ["2330.TW", "^TWII", "XAUUSD=X", "USDTWD=X", "JPYTWD=X", "BTC-USD"]
+        
+        # 定義多種黃金代碼 (現貨, 期貨, ETF) 做為保險
+        tickers = ["2330.TW", "^TWII", "XAUUSD=X", "GC=F", "GLD", "USDTWD=X", "JPYTWD=X", "BTC-USD"]
         data = yf.Tickers(" ".join(tickers))
         
         def get_price(symbol):
@@ -35,15 +36,23 @@ def get_market_data():
                 return 0 if df.empty else df['Close'].iloc[-1]
             except: return 0
 
+        # 黃金特別處理：三層保險
+        gold_price = get_price('XAUUSD=X') # 1. 試現貨
+        if gold_price == 0:
+            log("⚠️ 現貨黃金 XAUUSD=X 為 0，嘗試期貨 GC=F")
+            gold_price = get_price('GC=F') # 2. 試期貨
+            if gold_price == 0:
+                log("⚠️ 期貨黃金 GC=F 為 0，嘗試 ETF GLD")
+                gold_price = get_price('GLD') * 10 # 3. 試ETF (約略估算)
+
         vals = {
             "tsmc": get_price('2330.TW'), "taiex": get_price('^TWII'),
-            "gold": get_price('XAUUSD=X'), # 改用現貨
+            "gold": gold_price, 
             "usdtwd": get_price('USDTWD=X'),
             "jpytwd": get_price('JPYTWD=X'),
             "btc": get_price('BTC-USD')
         }
         
-        # 格式化
         final_vals = {}
         for key, val in vals.items():
             if val > 0:
@@ -51,26 +60,27 @@ def get_market_data():
                 elif key in ['jpytwd']: final_vals[key] = f"{val:.4f}"
                 else: final_vals[key] = f"{val:,.0f}"
             else:
-                final_vals[key] = "N/A"
-                log(f"⚠️ {key} 抓取為 0")
+                final_vals[key] = "Checking..."
+                log(f"❌ {key} 最終抓取失敗 (0)")
         
-        log("✅ Yahoo 數據抓取成功")
+        log(f"✅ Yahoo 數據成功 (Gold: {final_vals.get('gold')})")
         return final_vals
     except Exception as e:
-        log(f"❌ Yahoo 錯誤: {e}")
-        return {"tsmc": "1,510", "taiex": "28,556", "gold": "4,525", "usdtwd": "31.595", "jpytwd": "0.2150", "btc": "98,450"}
+        log(f"❌ Yahoo 系統錯誤: {e}")
+        return {"tsmc": "1510", "taiex": "28556", "gold": "4525", "usdtwd": "31.595", "jpytwd": "0.2150", "btc": "98450"}
 
 def get_video_data():
     log("Step 2: 連線 YouTube...")
     try:
         import requests
-        if not YT_KEY: return BACKUP_DATA['video']
+        if not YT_KEY: 
+            log("⚠️ 無 YouTube Key")
+            return BACKUP_DATA['video']
         url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=1&key={YT_KEY}&q=錢線百分百"
         res = requests.get(url)
         if res.status_code == 403:
-            log("❌ YouTube 403 (配額不足或未啟用)")
+            log(f"❌ YouTube 403 錯誤: {res.text}")
             return BACKUP_DATA['video']
-            
         data = res.json()
         if 'items' in data and len(data['items']) > 0:
             item = data['items'][0]['snippet']
@@ -81,52 +91,43 @@ def get_video_data():
     return BACKUP_DATA['video']
 
 def get_ai_analysis(video):
-    log("Step 3: 連線 Gemini AI (自動偵測版)...")
+    log("Step 3: 連線 Gemini AI...")
     try:
         import google.generativeai as genai
-        if not GEMINI_KEY: return BACKUP_DATA
+        if not GEMINI_KEY: 
+            log("⚠️ 無 Gemini Key")
+            return BACKUP_DATA
         
         genai.configure(api_key=GEMINI_KEY)
         
-        # 【關鍵修正】不猜模型了，直接問 Google 哪個能用
-        target_model = 'gemini-1.5-flash' # 首選
+        # 詳細測試模型權限
+        available_models = []
         try:
             for m in genai.list_models():
                 if 'generateContent' in m.supported_generation_methods:
-                    if 'flash' in m.name:
-                        target_model = m.name
-                        break
-                    elif 'pro' in m.name:
-                        target_model = m.name
-        except:
-            pass # 如果列出失敗，就用預設值硬試
-            
-        log(f"ℹ️ 使用模型: {target_model}")
-        model = genai.GenerativeModel(target_model)
+                    available_models.append(m.name)
+            log(f"ℹ️ 帳號可用模型: {available_models}")
+        except Exception as e:
+            log(f"❌ 無法列出模型 (權限錯誤?): {e}")
+
+        # 強制使用 gemini-pro (最通用)
+        model = genai.GenerativeModel('gemini-pro')
         
-        prompt = f"""
-        你是一位財經主播。請閱讀：{video['title']}
-        {video['desc']}
-        請回傳純 JSON:
-        {{
-            "summary": ["重點1", "重點2", "重點3", "重點4"],
-            "stocks": [{{"code": "2330", "name": "台積電", "reason": "理由"}}]
-        }}
-        """
+        prompt = f"分析影片：{video['title']}\n{video['desc']}\n回傳 JSON: {{'summary':['重點1','重點2','重點3'], 'stocks':[{{'code':'2330','name':'台積電','reason':'理由'}}]}}"
+        
         response = model.generate_content(prompt)
         text = response.text.replace("```json", "").replace("```", "").strip()
         log("✅ AI 分析成功")
         return json.loads(text)
     except Exception as e:
-        log(f"❌ AI 失敗: {e}")
+        log(f"❌ AI 失敗詳細原因: {e}")
         return BACKUP_DATA
 
 def save_html(ai_data, video, market):
-    log("Step 4: 生成 index.html ...")
+    log("Step 4: 生成 HTML...")
     try:
         update_time = (datetime.datetime.now() + datetime.timedelta(hours=8)).strftime("%Y-%m-%d %H:%M")
         
-        # 處理顯示格式
         gold_display = f"${market.get('gold', '0')}" if "$" not in str(market.get('gold','')) else market['gold']
         btc_display = f"${market.get('btc', '0')}" if "$" not in str(market.get('btc','')) else market['btc']
 
@@ -136,17 +137,15 @@ def save_html(ai_data, video, market):
         t_list = ai_data.get('stocks', BACKUP_DATA['stocks'])
         t_html = "".join([f"<tr><td style='font-weight:bold; color:#00e5ff;'>{s.get('code','')}</td><td>{s.get('name','')}</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>{s.get('reason','')}</td></tr>" for s in t_list])
         
-        # 錯誤日誌
-        logs_html = ""
-        if "❌" in "".join(DEBUG_LOGS):
-            logs_html = f'<div class="debug-box"><h3>🔧 系統自動修復日誌</h3>{"<br>".join(DEBUG_LOGS)}</div>'
+        # 強制顯示日誌 (不管有沒有錯)
+        logs_html = f'<div class="debug-box"><h3>🔧 v9.8 完整診斷日誌</h3>{"<br>".join(DEBUG_LOGS)}</div>'
 
         html = f"""
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v9.7 | AI Finance</title>
+    <title>Jason TV v9.8 | Debug</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
@@ -164,7 +163,7 @@ def save_html(ai_data, video, market):
         table {{ width: 100%; border-collapse: collapse; margin-top: 15px; }}
         th {{ text-align: left; color: #64748b; font-size: 12px; border-bottom: 1px solid var(--border); padding: 10px; }}
         td {{ padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }}
-        .debug-box {{ margin-top: 50px; padding: 20px; background: #2a0a0a; border: 1px solid #ff4d4d; color: #ff9999; font-family: monospace; font-size: 12px; border-radius: 8px; }}
+        .debug-box {{ margin-top: 50px; padding: 20px; background: #2a0a0a; border: 1px solid #ff4d4d; color: #ff9999; font-family: monospace; font-size: 12px; border-radius: 8px; white-space: pre-wrap; }}
     </style>
 </head>
 <body>
