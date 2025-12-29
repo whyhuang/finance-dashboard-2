@@ -3,13 +3,12 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v10.3 | Live</title>
+    <title>Jason TV v10.5 | Live</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --accent: #00e5ff; --card: #11151c; --border: #232a35; --up: #ff4d4d; --down: #00ff88; --text: #e2e8f0; }
         body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
-        /* 修正 Header Padding，避免時間被擋住 */
         header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 1000; box-sizing: border-box; }
         .logo { font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5); }
         .container { max-width: 1200px; margin: 80px auto; padding: 0 20px; }
@@ -33,35 +32,30 @@
     <div class="container">
         <div class="hero">
             <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：《風水輪轉?高股息.債券ETF 2026有望翻身?》【錢線百分百】20251226-10│非凡財經新聞│)</h2>
-            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>2026年全球經濟與利率展望：分析聯準會貨幣政策走向及對全球股市與債市的影響，特別是潛在的降息循環。</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>高股息ETF的投資機會與挑戰：探討在市場「風水輪轉」背景下，高股息策略的吸引力、選股邏輯及潛在風險，例如資金輪動效應。</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>債券ETF的估值修復與反彈契機：評估2026年債券市場可能觸底反彈的條件，如通膨趨勢、殖利率變化及不同債種（如公債、投資級債、高收益債）的表現。</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>資產配置策略：高股息與債券ETF的搭配運用：提供投資人如何在2026年將高股息與債券ETF納入投資組合，以達到風險分散與穩健報酬的建議，特別是在不同經濟情境下的配置考量。</div></div>
+            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>評估市場『風水輪轉』的可能性：探討2026年全球及台灣股市是否將迎來風格轉換，資金可能從過去的成長股或科技股，轉向具備穩定現金流、價值型或防禦型資產，以及這對投資組合帶來的影響。</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>深度分析高股息ETF在2026年的投資展望：剖析高股息股票及相關ETF（如0056、00878、00919等）在通膨趨緩、利率環境可能轉變下的吸引力，包括其股息殖利率、填息能力以及潛在的資本利得機會。</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>檢視債券ETF的『翻身』契機：探討在預期主要央行（特別是美國聯準會）可能於2026年啟動降息週期時，債券市場及債券ETF（如美國公債、投資級公司債ETF）能否走出過去的低谷，迎接價格上漲與穩定配息的雙重利好。</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>制定2026年資產配置策略：根據對高股息與債券ETF的展望，提供投資人如何在2026年調整資產配置，將高股息股票與債券納入投資組合，以平衡風險、追求收益並把握潛在的市場輪動機會。</div></div>
         </div>
         
         <div class="grid">
-            <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">28,786 ▲</div></div>
-            <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1,525 ▲</div></div>
-            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$4,536</div></div>
-            <div class="card"><div class="card-label">白銀價格 SILVER</div><div class="card-val" style="color:#cbd5e1">$79.57</div></div>
+            <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">28,791 ▲</div></div>
+            <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1,530 ▲</div></div>
+            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$4,539</div></div>
+            <div class="card"><div class="card-label">白銀價格 SILVER</div><div class="card-val" style="color:#cbd5e1">$79.72</div></div>
             
-            <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">31.377</div></div>
-            <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">0.1987</div></div>
-            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$89,997</div></div>
+            <div class="card"><div class="card-label">美債10年期殖利率 US10Y</div><div class="card-val" style="color:#a78bfa">4.14%</div></div>
+            <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">31.374</div></div>
+            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$90,152</div></div>
             <div class="card"><div class="card-label">以太幣 Ethereum</div><div class="card-val" style="color:#a78bfa">$3,040</div></div>
         </div>
 
         <div class="panel">
-            <h3 style="color:var(--accent); font-size:16px;">📊 全球關鍵資產趨勢分析 (示意)</h3>
+            <h3 style="color:var(--accent); font-size:16px;">📊 年度績效比較 (Year-To-Date %) - 即時運算</h3>
             <div style="height:320px;"><canvas id="mainChart"></canvas></div>
         </div>
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">🔥 錢線熱門追蹤</h3>
-            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>2330</td><td>台積電</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>作為台灣股市的權值龍頭，其營運展望與全球科技景氣緊密相關。在討論資金從高成長股向價值股或高股息/債券資產輪動時，台積電的表現和資金流向將是觀察市場風向的重要指標，間接影響整體市場對高股息ETF的相對吸引力。</td></tr><tr><td style='font-weight:bold; color:#00e5ff;'>2881</td><td>富邦金</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>金融股通常是高股息ETF的重要組成部分，且其獲利與配息能力受利率環境影響甚鉅。若2026年利率政策出現轉向，將直接影響金融股的表現及高股息ETF的收益，因此是討論高股息策略及利率變動影響時的關鍵標的。</td></tr></tbody></table>
+            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>0056</td><td>元大高股息</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>作為台灣市場最具代表性的高股息ETF，其長期穩定的配息紀錄與廣泛的市場認可度，使其成為分析高股息投資前景時，不可或缺的觀察標的。若市場風格轉變，其防禦性與收益性將更受關注。</td></tr><tr><td style='font-weight:bold; color:#00e5ff;'>00878</td><td>國泰永續高股息</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>結合ESG與高股息雙重概念，近年來深受投資人青睞。其在市場波動下的抗跌性與成分股的穩定性，使其在預期市場風水輪轉時，成為兼顧收益與風險的配置選項。</td></tr><tr><td style='font-weight:bold; color:#00e5ff;'>00919</td><td>群益台灣精選高息</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>以精選高息股、高獲利能力為特色，近年表現亮眼。分析其選股邏輯與未來展望，有助於投資人了解在變化的市場環境中，不同高股息ETF的潛在表現差異。</td></tr><tr><td style='font-weight:bold; color:#00e5ff;'>00679B</td><td>元大美債20年</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>追蹤美國長期公債，對聯準會利率政策變動極為敏感。在預期2026年可能進入降息週期時，是衡量債券市場資本利得機會的重要指標，其價格反彈潛力備受期待。</td></tr><tr><td style='font-weight:bold; color:#00e5ff;'>00772B</td><td>中信高評級公司債</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>代表高信用評級企業發行的債券ETF。相較於公債，其提供略高的收益率，且在經濟穩定或降息預期下，有望同時享有穩健的配息收入與資本利得空間，是評估債券市場復甦的另一重要參考。</td></tr></tbody></table>
         </div>
-        
-        <div class="debug-box" style="color: #88cc88;">
-            <h3>🔧 系統診斷日誌</h3>
-            Step 1: 連線 Yahoo Finance...<br>✅ Yahoo 數據成功 (Gold: 4,536, Silver: 79.57)<br>Step 2: 連線 YouTube (過濾 Shorts)...<br>⚠️ 跳過短影片: 錢線百分百1229台...<br>✅ 抓到完整影片: 《風水輪轉?高股息.債券ETF...<br>Step 3: 連線 Gemini AI...<br>✅ 使用模型: gemini-2.5-flash<br>✅ AI 分析成功<br>Step 4: 生成 HTML...
-        </div>
-        
+        <div class="debug-box" style="color: #88cc88;"><h3>🔧 系統診斷日誌</h3>Step 1: 連線 Yahoo Finance (含歷史數據)...<br>📊 年度績效計算完成: Gold 70.69%, BTC -4.52%<br>✅ Yahoo 數據成功 (Gold: 4,539)<br>Step 2: 連線 YouTube (過濾 Shorts)...<br>⚠️ 跳過短影片: 錢線百分百1229台...<br>✅ 抓到完整影片: 《風水輪轉?高股息.債券ETF...<br>Step 3: 連線 Gemini AI...<br>✅ 使用模型: gemini-2.5-flash<br>✅ AI 分析成功<br>Step 4: 生成 HTML...</div>
     </div>
     <script>
         function updateClock() {
@@ -72,17 +66,41 @@
         updateClock();
         
         new Chart(document.getElementById('mainChart'), {
-            type: 'line',
+            type: 'bar',
             data: {
-                labels: ['Q1', 'Q2', 'Q3', '2025Q4'],
-                datasets: [
-                    { label: '台股 (%)', data: [10, 25, 40, 65.8], borderColor: '#00e5ff', tension: 0.4, borderWidth: 3 },
-                    { label: '黃金 (%)', data: [15, 35, 55, 72], borderColor: '#fbbf24', tension: 0.4, borderWidth: 2 },
-                    { label: '比特幣 (%)', data: [5, 45, 85, 120], borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, borderWidth: 2 },
-                    { label: '美債殖利率 (%)', data: [3.8, 4.2, 4.4, 4.5], borderColor: '#a78bfa', tension: 0.4, borderWidth: 2 }
-                ]
+                labels: ['黃金 (Gold)', '白銀 (Silver)', '美股 (S&P500)', '台股 (TAIEX)', '比特幣 (BTC)'],
+                datasets: [{
+                    label: '今年漲跌幅 (%)',
+                    data: [np.float64(70.69), np.float64(169.14), np.float64(18.09), np.float64(26.1), np.float64(-4.52)], // 這裡會自動填入 Python 算出來的真實數據
+                    backgroundColor: [
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(203, 213, 225, 0.8)',
+                        'rgba(56, 189, 248, 0.8)',
+                        'rgba(0, 229, 255, 0.8)',
+                        'rgba(245, 158, 11, 0.8)'
+                    ],
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1
+                }]
             },
-            options: { maintainAspectRatio: false, plugins: { legend: { labels: { color: '#94a3b8' } } }, scales: { y: { ticks: { color: '#64748b' }, grid: { color: 'rgba(255,255,255,0.05)' } }, x: { ticks: { color: '#64748b' }, grid: { display: false } } } }
+            options: {
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        ticks: { 
+                            color: '#64748b',
+                            callback: function(value) { return value + '%'; }
+                        },
+                        grid: { color: 'rgba(255,255,255,0.05)' }
+                    },
+                    x: {
+                        ticks: { color: '#94a3b8' },
+                        grid: { display: false }
+                    }
+                }
+            }
         });
     </script>
 </body>
