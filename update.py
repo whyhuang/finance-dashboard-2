@@ -2,10 +2,10 @@ import os
 import datetime
 import json
 import sys
-import numpy as np # 確保處理數據
+import re # 用於強力清洗 JSON
 
 # === 系統配置 ===
-print("=== 啟動 Jason TV v10.7 (Stable AI & Line Chart) ===")
+print("=== 啟動 Jason TV v10.8 (Fix Numpy Crash & Line Chart) ===")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 YT_KEY = os.getenv("YOUTUBE_API_KEY")
 CHANNEL_ID = "UC_ObC9O0ZQ2FhW6u9_iFlZA"
@@ -17,7 +17,7 @@ def log(msg):
 
 # 備用數據
 BACKUP_DATA = {
-    "summary": ["Yahoo 連線成功 ✅", "AI 模型已鎖定穩定版", "圖表改為年度走勢比較", "BTC 數據運算修正"],
+    "summary": ["Yahoo 連線成功 ✅", "圖表數據格式已修復", "AI 模型已鎖定穩定版", "顯示年度走勢線圖"],
     "stocks": [{"code": "2330", "name": "台積電", "reason": "權值股領軍"}],
     "video": {"title": "錢線百分百 (備用)", "desc": "系統連線中..."}
 }
@@ -33,31 +33,38 @@ def get_market_data():
         def get_current_price(symbol):
             try:
                 df = data.tickers[symbol].history(period="5d")
-                if df.empty: return 0
-                return df['Close'].iloc[-1]
-            except: return 0
+                if df.empty: return 0.0
+                return float(df['Close'].iloc[-1])
+            except: return 0.0
 
-        # 2. 【關鍵升級】獲取過去 1 年的走勢數據 (每月一點)
+        # 2. 獲取過去 1 年走勢數據 (每月一點，標準化為 %)
         def get_trend_data(symbol):
             try:
                 # 抓取 1 年歷史，間隔為 1 個月
                 hist = data.tickers[symbol].history(period="1y", interval="1mo")
-                if hist.empty: return [0]*12
+                if hist.empty: return [0.0]*12
                 
-                # 正規化：以第一個月為基準 (0%)，計算後續漲跌幅
-                start_price = hist['Close'].iloc[0]
-                if start_price == 0: return [0]*12
+                # 確保數據足夠
+                prices = hist['Close'].dropna().tolist()
+                if len(prices) < 2: return [0.0]*12
+                
+                # 以第一點為基準 (0%) 計算漲跌幅
+                start_price = prices[0]
+                if start_price == 0: return [0.0]*12
                 
                 trend = []
-                for price in hist['Close']:
-                    pct_change = ((price - start_price) / start_price) * 100
-                    trend.append(round(pct_change, 2))
+                for p in prices:
+                    # 【關鍵修正】強制轉為 Python float，防止 Numpy 格式讓網頁崩潰
+                    pct = float((p - start_price) / start_price * 100)
+                    trend.append(round(pct, 2))
                 
-                # 確保只有 12 個點 (避免圖表太長)
+                # 取最後 12 個點
                 return trend[-12:] 
-            except: return [0]*12
+            except Exception as e:
+                log(f"⚠️ {symbol} 走勢計算錯誤: {e}")
+                return [0.0]*12
 
-        # 準備圖表數據 (五大資產)
+        # 準備圖表數據 (確保是普通 list)
         chart_series = {
             "gold": get_trend_data('GC=F'),
             "silver": get_trend_data('SI=F'),
@@ -66,8 +73,7 @@ def get_market_data():
             "btc": get_trend_data('BTC-USD')
         }
         
-        # 檢查 BTC 數據 (Debug)
-        log(f"📊 BTC 走勢數據 (最後3個月): {chart_series['btc'][-3:]}")
+        log(f"📊 BTC 走勢數據範例: {chart_series['btc'][-3:]}")
 
         # 即時報價
         vals = {
@@ -82,10 +88,10 @@ def get_market_data():
             "us10y": get_current_price('^TNX')
         }
         
-        # 數據防呆與備用值
+        # 防呆與備用值
         final_vals = {}
-        if vals['gold'] == 0: vals['gold'] = 4550
-        if vals['btc'] == 0: vals['btc'] = 98000
+        if vals['gold'] == 0: vals['gold'] = 4550.0
+        if vals['btc'] == 0: vals['btc'] = 98000.0
 
         for key, val in vals.items():
             if val > 0:
@@ -97,31 +103,37 @@ def get_market_data():
             else:
                 final_vals[key] = "N/A"
         
-        # 將圖表數據打包
         final_vals['chart_data'] = chart_series
-        
         log(f"✅ Yahoo 數據成功")
         return final_vals
     except Exception as e:
-        log(f"❌ Yahoo 錯誤: {e}")
+        log(f"❌ Yahoo 嚴重錯誤: {e}")
         return BACKUP_DATA.get('market', {})
 
 def get_video_data():
-    log("Step 2: 連線 YouTube (過濾 Shorts)...")
+    log("Step 2: 連線 YouTube (擴大搜尋)...")
     try:
         import requests
         if not YT_KEY: return BACKUP_DATA['video']
         
-        url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=5&key={YT_KEY}"
+        # 【關鍵修正】擴大搜尋到 10 部，避免被連續 Shorts 擋住
+        url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=10&key={YT_KEY}"
         res = requests.get(url)
         data = res.json()
+        
         if 'items' in data:
             for item in data['items']:
                 title = item['snippet']['title']
                 desc = item['snippet']['description']
+                # 過濾 Shorts
                 if "#shorts" in title.lower(): continue
+                
                 log(f"✅ 抓到影片: {title[:15]}...")
                 return {"title": title, "desc": desc}
+            
+            # 如果真的全是 Shorts，拿第一部
+            first = data['items'][0]['snippet']
+            return {"title": first['title'], "desc": first['description']}
     except: pass
     return BACKUP_DATA['video']
 
@@ -133,35 +145,43 @@ def get_ai_analysis(video):
         
         genai.configure(api_key=GEMINI_KEY)
         
-        # 【關鍵修復】強制使用 1.5-flash，不讓它自動選最新的不穩定版
+        # 【關鍵修正】不再自動搜尋模型，強制使用 1.5-flash (最穩定)
         target_model = 'gemini-1.5-flash'
-        log(f"✅ 強制鎖定模型: {target_model}")
+        log(f"ℹ️ 鎖定模型: {target_model}")
         model = genai.GenerativeModel(target_model)
         
         prompt = f"""
         你是一位財經主播。請分析這部影片：{video['title']}
         影片說明：{video['desc']}
         
-        請回傳純 JSON (不要任何 Markdown 標記，只要 JSON):
+        1. 摘要 4 個重點。
+        2. 請從影片內容中，找出 3-5 檔「被提到的熱門股票或 ETF」。
+        
+        請嚴格回傳純 JSON 格式，不要 Markdown，不要 ```json 開頭：
         {{
             "summary": ["重點1", "重點2", "重點3", "重點4"],
             "stocks": [{{"code": "2330", "name": "台積電", "reason": "理由"}}]
         }}
         """
         response = model.generate_content(prompt)
-        
-        # 強力清洗 JSON (去除 ```json 等標記)
         text = response.text.strip()
-        if text.startswith("```"):
-            text = text.split("\n", 1)[1]
-            if text.endswith("```"):
-                text = text.rsplit("\n", 1)[0]
         
-        log("✅ AI 分析成功")
-        return json.loads(text)
+        # 【關鍵修正】強力清洗 JSON，防止 AI 囉嗦
+        match = re.search(r'\{.*\}', text, re.DOTALL)
+        if match:
+            json_str = match.group(0)
+            log("✅ JSON 格式清洗成功")
+            return json.loads(json_str)
+        else:
+            log("⚠️ 無法提取 JSON，使用原始文本嘗試")
+            return json.loads(text)
+            
     except Exception as e:
         log(f"❌ AI 失敗: {e}")
-        return BACKUP_DATA
+        # 如果出錯，回傳備用但帶有錯誤訊息
+        err_data = BACKUP_DATA.copy()
+        err_data["summary"] = ["AI 暫時無法連線", "請檢查 API 配額", "目前顯示即時報價", "請稍後再試"]
+        return err_data
 
 def save_html(ai_data, video, market):
     log("Step 4: 生成 HTML...")
@@ -169,9 +189,8 @@ def save_html(ai_data, video, market):
         tz = datetime.timezone(datetime.timedelta(hours=8))
         update_time = datetime.datetime.now(tz).strftime("%Y-%m-%d %H:%M")
         
-        # 準備 Chart.js 數據
+        # 準備 Chart.js 數據 (轉為 JSON 字串)
         chart_series = market.get('chart_data', {})
-        # 轉成 JSON 字串供 JS 使用
         json_gold = json.dumps(chart_series.get('gold', []))
         json_silver = json.dumps(chart_series.get('silver', []))
         json_us = json.dumps(chart_series.get('us_stock', []))
@@ -192,7 +211,7 @@ def save_html(ai_data, video, market):
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v10.7 | Live</title>
+    <title>Jason TV v10.8 | Live</title>
     <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
     <link href="[https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap](https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap)" rel="stylesheet">
     <style>
@@ -227,8 +246,9 @@ def save_html(ai_data, video, market):
         <div class="grid">
             <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">{market['taiex']} ▲</div></div>
             <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">{market['tsmc']} ▲</div></div>
-            <div class="card"><div class="card-label">黃金 GOLD</div><div class="card-val" style="color:#fbbf24">${market['gold']}</div></div>
-            <div class="card"><div class="card-label">白銀 SILVER</div><div class="card-val" style="color:#cbd5e1">${market['silver']}</div></div>
+            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">${market['gold']}</div></div>
+            <div class="card"><div class="card-label">白銀價格 SILVER</div><div class="card-val" style="color:#cbd5e1">${market['silver']}</div></div>
+            
             <div class="card"><div class="card-label">美債10年殖利率</div><div class="card-val" style="color:#a78bfa">{market['us10y']}</div></div>
             <div class="card"><div class="card-label">美元/台幣</div><div class="card-val">{market['usdtwd']}</div></div>
             <div class="card"><div class="card-label">比特幣 BTC</div><div class="card-val" style="color:#f59e0b">${market['btc']}</div></div>
@@ -280,7 +300,7 @@ def save_html(ai_data, video, market):
                     }},
                     x: {{ grid: {{ display: false }}, ticks: {{ color: '#64748b' }} }}
                 }},
-                elements: {{ point: {{ radius: 0, hitRadius: 10 }} }} // 隱藏點，讓線條更平滑
+                elements: {{ point: {{ radius: 0, hitRadius: 10 }} }}
             }}
         }});
     </script>
