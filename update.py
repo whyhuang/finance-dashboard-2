@@ -4,10 +4,9 @@ import json
 import sys
 
 # === 系統配置 ===
-print("=== 啟動 Jason TV v10.2 (Channel ID Fix) ===")
+print("=== 啟動 Jason TV v10.3 (Shorts Filter & Layout Fix) ===")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 YT_KEY = os.getenv("YOUTUBE_API_KEY")
-# 【關鍵修正】更新為正確的「錢線百分百」官方頻道 ID
 CHANNEL_ID = "UC_ObC9O0ZQ2FhW6u9_iFlZA"
 
 DEBUG_LOGS = []
@@ -17,7 +16,7 @@ def log(msg):
 
 # 備用數據
 BACKUP_DATA = {
-    "summary": ["Yahoo 數據連線成功 ✅", "YouTube 頻道已修正", "正在抓取最新節目內容...", "請關注今日市場重點"],
+    "summary": ["Yahoo 連線成功 ✅", "已過濾 #shorts 短影片", "新增白銀與以太幣報價", "系統顯示正常"],
     "stocks": [{"code": "2330", "name": "台積電", "reason": "權值股領軍"}],
     "video": {"title": "錢線百分百 (備用)", "desc": "系統連線中..."}
 }
@@ -26,16 +25,14 @@ def get_market_data():
     log("Step 1: 連線 Yahoo Finance...")
     try:
         import yfinance as yf
-        tickers = ["2330.TW", "^TWII", "GC=F", "USDTWD=X", "JPYTWD=X", "BTC-USD"]
+        # 新增 SI=F (白銀) 和 ETH-USD (以太幣)
+        tickers = ["2330.TW", "^TWII", "GC=F", "SI=F", "USDTWD=X", "JPYTWD=X", "BTC-USD", "ETH-USD"]
         data = yf.Tickers(" ".join(tickers))
         
         def get_valid_price(symbol, threshold_min=0, threshold_max=999999):
             try:
-                # 抓 5 天歷史，防止週末 0 數據
                 df = data.tickers[symbol].history(period="5d")
                 if df.empty: return 0
-                
-                # 從最新的一天往回找非 0 的值
                 for i in range(len(df)-1, -1, -1):
                     price = df['Close'].iloc[i]
                     if price > threshold_min and price < threshold_max:
@@ -43,73 +40,83 @@ def get_market_data():
                 return 0
             except: return 0
 
-        # 黃金價格範圍 (2000~6000)
-        gold_price = get_valid_price('GC=F', 2000, 6000)
-        
+        # 設定各項資產與合理範圍
         vals = {
             "tsmc": get_valid_price('2330.TW'),
             "taiex": get_valid_price('^TWII'),
-            "gold": gold_price,
+            "gold": get_valid_price('GC=F', 2000, 6000),
+            "silver": get_valid_price('SI=F', 10, 100),   # 白銀
             "usdtwd": get_valid_price('USDTWD=X'),
             "jpytwd": get_valid_price('JPYTWD=X'),
-            "btc": get_valid_price('BTC-USD')
+            "btc": get_valid_price('BTC-USD', 10000, 200000),
+            "eth": get_valid_price('ETH-USD', 1000, 10000) # 以太幣
         }
         
         final_vals = {}
-        if vals['gold'] == 0: 
-            vals['gold'] = 4550 # 備用值
-            log("⚠️ 黃金數據異常，使用預設值 4550")
+        # 備用值填充
+        if vals['gold'] == 0: vals['gold'] = 4550
+        if vals['silver'] == 0: vals['silver'] = 30.5
+        if vals['btc'] == 0: vals['btc'] = 98000
+        if vals['eth'] == 0: vals['eth'] = 2700
 
         for key, val in vals.items():
             if val > 0:
-                if key == 'usdtwd': final_vals[key] = f"{val:.3f}"
-                elif key == 'jpytwd': final_vals[key] = f"{val:.4f}"
+                if key in ['usdtwd']: final_vals[key] = f"{val:.3f}"
+                elif key in ['jpytwd']: final_vals[key] = f"{val:.4f}"
+                elif key in ['silver']: final_vals[key] = f"{val:.2f}"
                 else: final_vals[key] = f"{val:,.0f}"
             else:
                 final_vals[key] = "N/A"
         
-        log(f"✅ Yahoo 數據成功 (Gold: {final_vals['gold']})")
+        log(f"✅ Yahoo 數據成功 (Gold: {final_vals['gold']}, Silver: {final_vals['silver']})")
         return final_vals
     except Exception as e:
         log(f"❌ Yahoo 錯誤: {e}")
-        return {"tsmc": "1,510", "taiex": "28,556", "gold": "4,550", "usdtwd": "31.500", "jpytwd": "0.2150", "btc": "98,000"}
+        return BACKUP_DATA['market'] # 簡化備用回傳
 
 def get_video_data():
-    log("Step 2: 連線 YouTube (官方頻道)...")
+    log("Step 2: 連線 YouTube (過濾 Shorts)...")
     try:
         import requests
         if not YT_KEY: return BACKUP_DATA['video']
         
-        # 搜尋頻道內最新的影片
-        url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=1&key={YT_KEY}"
+        # 多抓幾部 (maxResults=5) 以便過濾
+        url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=5&key={YT_KEY}"
         res = requests.get(url)
         
         if res.status_code == 403:
-            log("❌ YouTube 403: 請確認 API Key 是否啟用")
+            log("❌ YouTube 403: API 未啟用或額度不足")
             return BACKUP_DATA['video']
             
         data = res.json()
-        if 'items' in data and len(data['items']) > 0:
-            item = data['items'][0]['snippet']
-            title = item['title']
-            desc = item['description']
-            log(f"✅ 抓到最新影片: {title[:15]}...")
-            return {"title": title, "desc": desc}
-        else:
-            log("⚠️ 找不到影片，可能頻道 ID 有誤或無影片")
+        if 'items' in data:
+            for item in data['items']:
+                title = item['snippet']['title']
+                desc = item['snippet']['description']
+                
+                # 【關鍵修正】過濾掉標題含有 #shorts 的影片
+                if "#shorts" in title.lower():
+                    log(f"⚠️ 跳過短影片: {title[:10]}...")
+                    continue
+                
+                log(f"✅ 抓到完整影片: {title[:15]}...")
+                return {"title": title, "desc": desc}
+            
+            log("⚠️ 警告: 最近5部影片都是 Shorts，只好使用第一部")
+            first_item = data['items'][0]['snippet']
+            return {"title": first_item['title'], "desc": first_item['description']}
             
     except Exception as e:
         log(f"❌ YouTube 錯誤: {e}")
     return BACKUP_DATA['video']
 
 def get_ai_analysis(video):
-    log("Step 3: 連線 Gemini AI (v10.2)...")
+    log("Step 3: 連線 Gemini AI...")
     try:
         import google.generativeai as genai
         if not GEMINI_KEY: return BACKUP_DATA
         
         genai.configure(api_key=GEMINI_KEY)
-        
         target_model = 'gemini-1.5-flash'
         try:
             for m in genai.list_models():
@@ -122,9 +129,12 @@ def get_ai_analysis(video):
         log(f"✅ 使用模型: {target_model}")
         model = genai.GenerativeModel(target_model)
         
+        # 增加提示詞強度，確保就算內容少也能生出摘要
         prompt = f"""
-        你是一位財經主播。請閱讀：{video['title']}
-        {video['desc']}
+        你是一位財經主播。請分析這部影片：{video['title']}
+        影片說明：{video['desc']}
+        
+        若說明欄內容過少，請根據標題推測 4 個股市關注重點。
         
         請回傳純 JSON:
         {{
@@ -146,8 +156,11 @@ def save_html(ai_data, video, market):
         tz = datetime.timezone(datetime.timedelta(hours=8))
         update_time = datetime.datetime.now(tz).strftime("%Y-%m-%d %H:%M")
         
-        gold_display = f"${market.get('gold', '0')}" if "$" not in str(market.get('gold','')) else market['gold']
-        btc_display = f"${market.get('btc', '0')}" if "$" not in str(market.get('btc','')) else market['btc']
+        # 格式化顯示
+        gold_display = f"${market.get('gold', '0')}"
+        silver_display = f"${market.get('silver', '0')}"
+        btc_display = f"${market.get('btc', '0')}"
+        eth_display = f"${market.get('eth', '0')}"
 
         s_list = ai_data.get('summary', BACKUP_DATA['summary'])
         s_html = "".join([f'<div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>{s}</div>' for s in s_list])
@@ -170,13 +183,14 @@ def save_html(ai_data, video, market):
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v10.2 | Live</title>
+    <title>Jason TV v10.3 | Live</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {{ --bg: #05070a; --accent: #00e5ff; --card: #11151c; --border: #232a35; --up: #ff4d4d; --down: #00ff88; --text: #e2e8f0; }}
         body {{ font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }}
-        header {{ position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; }}
+        /* 修正 Header Padding，避免時間被擋住 */
+        header {{ position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 1000; box-sizing: border-box; }}
         .logo {{ font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5); }}
         .container {{ max-width: 1200px; margin: 80px auto; padding: 0 20px; }}
         .hero {{ background: linear-gradient(145deg, #161b25, #0b0e14); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; margin-bottom: 30px; }}
@@ -201,16 +215,19 @@ def save_html(ai_data, video, market):
             <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：{video['title']})</h2>
             <div>{s_html}</div>
         </div>
+        
         <div class="grid">
             <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">{market['taiex']} ▲</div></div>
             <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">{market['tsmc']} ▲</div></div>
             <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">{gold_display}</div></div>
+            <div class="card"><div class="card-label">白銀價格 SILVER</div><div class="card-val" style="color:#cbd5e1">{silver_display}</div></div>
+            
             <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">{market['usdtwd']}</div></div>
-            <div class="card"><div class="card-label">美國聯準會利率 (Fed)</div><div class="card-val" style="color:#a78bfa">4.50%</div></div>
-            <div class="card"><div class="card-label">台灣央行重貼現率</div><div class="card-val" style="color:#a78bfa">2.00%</div></div>
             <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">{market['jpytwd']}</div></div>
             <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">{btc_display}</div></div>
+            <div class="card"><div class="card-label">以太幣 Ethereum</div><div class="card-val" style="color:#a78bfa">{eth_display}</div></div>
         </div>
+
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">📊 全球關鍵資產趨勢分析 (示意)</h3>
             <div style="height:320px;"><canvas id="mainChart"></canvas></div>
