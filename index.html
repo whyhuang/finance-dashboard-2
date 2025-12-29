@@ -3,13 +3,14 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v10.2 | Live</title>
+    <title>Jason TV v10.3 | Live</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #05070a; --accent: #00e5ff; --card: #11151c; --border: #232a35; --up: #ff4d4d; --down: #00ff88; --text: #e2e8f0; }
         body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
-        header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 20px; z-index: 1000; }
+        /* 修正 Header Padding，避免時間被擋住 */
+        header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 1000; box-sizing: border-box; }
         .logo { font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5); }
         .container { max-width: 1200px; margin: 80px auto; padding: 0 20px; }
         .hero { background: linear-gradient(145deg, #161b25, #0b0e14); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; margin-bottom: 30px; }
@@ -31,31 +32,34 @@
     </header>
     <div class="container">
         <div class="hero">
-            <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：錢線百分百1229台股觀盤重點#shorts)</h2>
-            <div></div>
+            <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：《風水輪轉?高股息.債券ETF 2026有望翻身?》【錢線百分百】20251226-10│非凡財經新聞│)</h2>
+            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>2026年全球經濟與利率展望：分析聯準會貨幣政策走向及對全球股市與債市的影響，特別是潛在的降息循環。</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>高股息ETF的投資機會與挑戰：探討在市場「風水輪轉」背景下，高股息策略的吸引力、選股邏輯及潛在風險，例如資金輪動效應。</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>債券ETF的估值修復與反彈契機：評估2026年債券市場可能觸底反彈的條件，如通膨趨勢、殖利率變化及不同債種（如公債、投資級債、高收益債）的表現。</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>資產配置策略：高股息與債券ETF的搭配運用：提供投資人如何在2026年將高股息與債券ETF納入投資組合，以達到風險分散與穩健報酬的建議，特別是在不同經濟情境下的配置考量。</div></div>
         </div>
+        
         <div class="grid">
-            <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">28,717 ▲</div></div>
-            <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1,520 ▲</div></div>
-            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$4,542</div></div>
-            <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">31.387</div></div>
-            <div class="card"><div class="card-label">美國聯準會利率 (Fed)</div><div class="card-val" style="color:#a78bfa">4.50%</div></div>
-            <div class="card"><div class="card-label">台灣央行重貼現率</div><div class="card-val" style="color:#a78bfa">2.00%</div></div>
-            <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">0.1985</div></div>
-            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$89,353</div></div>
+            <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">28,786 ▲</div></div>
+            <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1,525 ▲</div></div>
+            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$4,536</div></div>
+            <div class="card"><div class="card-label">白銀價格 SILVER</div><div class="card-val" style="color:#cbd5e1">$79.57</div></div>
+            
+            <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">31.377</div></div>
+            <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">0.1987</div></div>
+            <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">$89,997</div></div>
+            <div class="card"><div class="card-label">以太幣 Ethereum</div><div class="card-val" style="color:#a78bfa">$3,040</div></div>
         </div>
+
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">📊 全球關鍵資產趨勢分析 (示意)</h3>
             <div style="height:320px;"><canvas id="mainChart"></canvas></div>
         </div>
         <div class="panel">
             <h3 style="color:var(--accent); font-size:16px;">🔥 錢線熱門追蹤</h3>
-            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody></tbody></table>
+            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>2330</td><td>台積電</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>作為台灣股市的權值龍頭，其營運展望與全球科技景氣緊密相關。在討論資金從高成長股向價值股或高股息/債券資產輪動時，台積電的表現和資金流向將是觀察市場風向的重要指標，間接影響整體市場對高股息ETF的相對吸引力。</td></tr><tr><td style='font-weight:bold; color:#00e5ff;'>2881</td><td>富邦金</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>金融股通常是高股息ETF的重要組成部分，且其獲利與配息能力受利率環境影響甚鉅。若2026年利率政策出現轉向，將直接影響金融股的表現及高股息ETF的收益，因此是討論高股息策略及利率變動影響時的關鍵標的。</td></tr></tbody></table>
         </div>
         
         <div class="debug-box" style="color: #88cc88;">
             <h3>🔧 系統診斷日誌</h3>
-            Step 1: 連線 Yahoo Finance...<br>✅ Yahoo 數據成功 (Gold: 4,542)<br>Step 2: 連線 YouTube (官方頻道)...<br>✅ 抓到最新影片: 錢線百分百1229台股觀盤重點...<br>Step 3: 連線 Gemini AI (v10.2)...<br>✅ 使用模型: gemini-2.5-flash<br>✅ AI 分析成功<br>Step 4: 生成 HTML...
+            Step 1: 連線 Yahoo Finance...<br>✅ Yahoo 數據成功 (Gold: 4,536, Silver: 79.57)<br>Step 2: 連線 YouTube (過濾 Shorts)...<br>⚠️ 跳過短影片: 錢線百分百1229台...<br>✅ 抓到完整影片: 《風水輪轉?高股息.債券ETF...<br>Step 3: 連線 Gemini AI...<br>✅ 使用模型: gemini-2.5-flash<br>✅ AI 分析成功<br>Step 4: 生成 HTML...
         </div>
         
     </div>
