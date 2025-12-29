@@ -4,7 +4,7 @@ import json
 import sys
 
 # === 系統配置 ===
-print("=== 啟動 Jason TV v10.3 (Shorts Filter & Layout Fix) ===")
+print("=== 啟動 Jason TV v10.5 (Real-Time YTD Chart) ===")
 GEMINI_KEY = os.getenv("GEMINI_API_KEY")
 YT_KEY = os.getenv("YOUTUBE_API_KEY")
 CHANNEL_ID = "UC_ObC9O0ZQ2FhW6u9_iFlZA"
@@ -16,19 +16,20 @@ def log(msg):
 
 # 備用數據
 BACKUP_DATA = {
-    "summary": ["Yahoo 連線成功 ✅", "已過濾 #shorts 短影片", "新增白銀與以太幣報價", "系統顯示正常"],
+    "summary": ["Yahoo 連線成功 ✅", "圖表數據已改為即時運算", "年度績效自動更新", "系統運作正常"],
     "stocks": [{"code": "2330", "name": "台積電", "reason": "權值股領軍"}],
     "video": {"title": "錢線百分百 (備用)", "desc": "系統連線中..."}
 }
 
 def get_market_data():
-    log("Step 1: 連線 Yahoo Finance...")
+    log("Step 1: 連線 Yahoo Finance (含歷史數據)...")
     try:
         import yfinance as yf
-        # 新增 SI=F (白銀) 和 ETH-USD (以太幣)
-        tickers = ["2330.TW", "^TWII", "GC=F", "SI=F", "USDTWD=X", "JPYTWD=X", "BTC-USD", "ETH-USD"]
+        # 定義需要抓取的資產代碼
+        tickers = ["2330.TW", "^TWII", "GC=F", "SI=F", "USDTWD=X", "JPYTWD=X", "BTC-USD", "ETH-USD", "^TNX", "^GSPC"]
         data = yf.Tickers(" ".join(tickers))
         
+        # 1. 獲取即時價格 (防呆機制)
         def get_valid_price(symbol, threshold_min=0, threshold_max=999999):
             try:
                 df = data.tickers[symbol].history(period="5d")
@@ -40,16 +41,44 @@ def get_market_data():
                 return 0
             except: return 0
 
-        # 設定各項資產與合理範圍
+        # 2. 【新增】獲取今年以來 (YTD) 漲跌幅
+        def get_ytd_change(symbol):
+            try:
+                # 抓取今年以來的數據
+                hist = data.tickers[symbol].history(period="ytd")
+                if hist.empty or len(hist) < 2: return 0
+                
+                start_price = hist['Close'].iloc[0] # 年初價格
+                end_price = hist['Close'].iloc[-1]  # 最新價格
+                
+                if start_price == 0: return 0
+                
+                # 計算百分比變化
+                change_pct = ((end_price - start_price) / start_price) * 100
+                return round(change_pct, 2)
+            except: return 0
+
+        # 計算圖表需要的 YTD 數據
+        chart_data = [
+            get_ytd_change('GC=F'),    # 黃金
+            get_ytd_change('SI=F'),    # 白銀
+            get_ytd_change('^GSPC'),   # 美股 (S&P 500)
+            get_ytd_change('^TWII'),   # 台股
+            get_ytd_change('BTC-USD')  # 比特幣
+        ]
+        log(f"📊 年度績效計算完成: Gold {chart_data[0]}%, BTC {chart_data[4]}%")
+
+        # 即時報價
         vals = {
             "tsmc": get_valid_price('2330.TW'),
             "taiex": get_valid_price('^TWII'),
             "gold": get_valid_price('GC=F', 2000, 6000),
-            "silver": get_valid_price('SI=F', 10, 100),   # 白銀
+            "silver": get_valid_price('SI=F', 10, 100),
             "usdtwd": get_valid_price('USDTWD=X'),
             "jpytwd": get_valid_price('JPYTWD=X'),
             "btc": get_valid_price('BTC-USD', 10000, 200000),
-            "eth": get_valid_price('ETH-USD', 1000, 10000) # 以太幣
+            "eth": get_valid_price('ETH-USD', 1000, 10000),
+            "us10y": get_valid_price('^TNX')
         }
         
         final_vals = {}
@@ -57,22 +86,29 @@ def get_market_data():
         if vals['gold'] == 0: vals['gold'] = 4550
         if vals['silver'] == 0: vals['silver'] = 30.5
         if vals['btc'] == 0: vals['btc'] = 98000
-        if vals['eth'] == 0: vals['eth'] = 2700
+        if vals['us10y'] == 0: vals['us10y'] = 4.5
 
         for key, val in vals.items():
             if val > 0:
                 if key in ['usdtwd']: final_vals[key] = f"{val:.3f}"
                 elif key in ['jpytwd']: final_vals[key] = f"{val:.4f}"
                 elif key in ['silver']: final_vals[key] = f"{val:.2f}"
+                elif key in ['us10y']: final_vals[key] = f"{val:.2f}%"
                 else: final_vals[key] = f"{val:,.0f}"
             else:
                 final_vals[key] = "N/A"
         
-        log(f"✅ Yahoo 數據成功 (Gold: {final_vals['gold']}, Silver: {final_vals['silver']})")
+        # 將圖表數據打包傳出去
+        final_vals['chart_ytd'] = chart_data
+        
+        log(f"✅ Yahoo 數據成功 (Gold: {final_vals['gold']})")
         return final_vals
     except Exception as e:
         log(f"❌ Yahoo 錯誤: {e}")
-        return BACKUP_DATA['market'] # 簡化備用回傳
+        # 出錯時回傳全 0 的圖表數據
+        res = BACKUP_DATA.get('market', {})
+        res['chart_ytd'] = [0, 0, 0, 0, 0]
+        return res
 
 def get_video_data():
     log("Step 2: 連線 YouTube (過濾 Shorts)...")
@@ -80,7 +116,6 @@ def get_video_data():
         import requests
         if not YT_KEY: return BACKUP_DATA['video']
         
-        # 多抓幾部 (maxResults=5) 以便過濾
         url = f"https://www.googleapis.com/youtube/v3/search?part=snippet&channelId={CHANNEL_ID}&order=date&type=video&maxResults=5&key={YT_KEY}"
         res = requests.get(url)
         
@@ -93,21 +128,15 @@ def get_video_data():
             for item in data['items']:
                 title = item['snippet']['title']
                 desc = item['snippet']['description']
-                
-                # 【關鍵修正】過濾掉標題含有 #shorts 的影片
                 if "#shorts" in title.lower():
                     log(f"⚠️ 跳過短影片: {title[:10]}...")
                     continue
-                
                 log(f"✅ 抓到完整影片: {title[:15]}...")
                 return {"title": title, "desc": desc}
-            
-            log("⚠️ 警告: 最近5部影片都是 Shorts，只好使用第一部")
+            log("⚠️ 警告: 最近5部皆為 Shorts，使用第一部")
             first_item = data['items'][0]['snippet']
             return {"title": first_item['title'], "desc": first_item['description']}
-            
-    except Exception as e:
-        log(f"❌ YouTube 錯誤: {e}")
+    except: pass
     return BACKUP_DATA['video']
 
 def get_ai_analysis(video):
@@ -129,7 +158,6 @@ def get_ai_analysis(video):
         log(f"✅ 使用模型: {target_model}")
         model = genai.GenerativeModel(target_model)
         
-        # 增加提示詞強度，確保就算內容少也能生出摘要
         prompt = f"""
         你是一位財經主播。請分析這部影片：{video['title']}
         影片說明：{video['desc']}
@@ -156,11 +184,13 @@ def save_html(ai_data, video, market):
         tz = datetime.timezone(datetime.timedelta(hours=8))
         update_time = datetime.datetime.now(tz).strftime("%Y-%m-%d %H:%M")
         
-        # 格式化顯示
         gold_display = f"${market.get('gold', '0')}"
         silver_display = f"${market.get('silver', '0')}"
         btc_display = f"${market.get('btc', '0')}"
         eth_display = f"${market.get('eth', '0')}"
+        
+        # 獲取計算好的圖表數據
+        ytd_data = market.get('chart_ytd', [0, 0, 0, 0, 0])
 
         s_list = ai_data.get('summary', BACKUP_DATA['summary'])
         s_html = "".join([f'<div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>{s}</div>' for s in s_list])
@@ -170,26 +200,19 @@ def save_html(ai_data, video, market):
         
         log_style = "color: #ff9999;" if "❌" in "".join(DEBUG_LOGS) else "color: #88cc88;"
         title_text = "🔧 系統診斷日誌"
-        
-        logs_html = f'''
-        <div class="debug-box" style="{log_style}">
-            <h3>{title_text}</h3>
-            {"<br>".join(DEBUG_LOGS)}
-        </div>
-        '''
+        logs_html = f'<div class="debug-box" style="{log_style}"><h3>{title_text}</h3>{"<br>".join(DEBUG_LOGS)}</div>'
 
         html = f"""
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v10.3 | Live</title>
+    <title>Jason TV v10.5 | Live</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap" rel="stylesheet">
     <style>
         :root {{ --bg: #05070a; --accent: #00e5ff; --card: #11151c; --border: #232a35; --up: #ff4d4d; --down: #00ff88; --text: #e2e8f0; }}
         body {{ font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }}
-        /* 修正 Header Padding，避免時間被擋住 */
         header {{ position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 1000; box-sizing: border-box; }}
         .logo {{ font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5); }}
         .container {{ max-width: 1200px; margin: 80px auto; padding: 0 20px; }}
@@ -222,14 +245,14 @@ def save_html(ai_data, video, market):
             <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">{gold_display}</div></div>
             <div class="card"><div class="card-label">白銀價格 SILVER</div><div class="card-val" style="color:#cbd5e1">{silver_display}</div></div>
             
+            <div class="card"><div class="card-label">美債10年期殖利率 US10Y</div><div class="card-val" style="color:#a78bfa">{market['us10y']}</div></div>
             <div class="card"><div class="card-label">美元/台幣 USD/TWD</div><div class="card-val">{market['usdtwd']}</div></div>
-            <div class="card"><div class="card-label">日圓/台幣 JPY/TWD</div><div class="card-val" style="color:#38bdf8">{market['jpytwd']}</div></div>
             <div class="card"><div class="card-label">比特幣 Bitcoin</div><div class="card-val" style="color:#f59e0b">{btc_display}</div></div>
             <div class="card"><div class="card-label">以太幣 Ethereum</div><div class="card-val" style="color:#a78bfa">{eth_display}</div></div>
         </div>
 
         <div class="panel">
-            <h3 style="color:var(--accent); font-size:16px;">📊 全球關鍵資產趨勢分析 (示意)</h3>
+            <h3 style="color:var(--accent); font-size:16px;">📊 年度績效比較 (Year-To-Date %) - 即時運算</h3>
             <div style="height:320px;"><canvas id="mainChart"></canvas></div>
         </div>
         <div class="panel">
@@ -247,17 +270,41 @@ def save_html(ai_data, video, market):
         updateClock();
         
         new Chart(document.getElementById('mainChart'), {{
-            type: 'line',
+            type: 'bar',
             data: {{
-                labels: ['Q1', 'Q2', 'Q3', '2025Q4'],
-                datasets: [
-                    {{ label: '台股 (%)', data: [10, 25, 40, 65.8], borderColor: '#00e5ff', tension: 0.4, borderWidth: 3 }},
-                    {{ label: '黃金 (%)', data: [15, 35, 55, 72], borderColor: '#fbbf24', tension: 0.4, borderWidth: 2 }},
-                    {{ label: '比特幣 (%)', data: [5, 45, 85, 120], borderColor: '#f59e0b', borderDash: [5,5], tension: 0.4, borderWidth: 2 }},
-                    {{ label: '美債殖利率 (%)', data: [3.8, 4.2, 4.4, 4.5], borderColor: '#a78bfa', tension: 0.4, borderWidth: 2 }}
-                ]
+                labels: ['黃金 (Gold)', '白銀 (Silver)', '美股 (S&P500)', '台股 (TAIEX)', '比特幣 (BTC)'],
+                datasets: [{{
+                    label: '今年漲跌幅 (%)',
+                    data: {ytd_data}, // 這裡會自動填入 Python 算出來的真實數據
+                    backgroundColor: [
+                        'rgba(251, 191, 36, 0.8)',
+                        'rgba(203, 213, 225, 0.8)',
+                        'rgba(56, 189, 248, 0.8)',
+                        'rgba(0, 229, 255, 0.8)',
+                        'rgba(245, 158, 11, 0.8)'
+                    ],
+                    borderColor: 'rgba(255,255,255,0.1)',
+                    borderWidth: 1
+                }}]
             }},
-            options: {{ maintainAspectRatio: false, plugins: {{ legend: {{ labels: {{ color: '#94a3b8' }} }} }}, scales: {{ y: {{ ticks: {{ color: '#64748b' }}, grid: {{ color: 'rgba(255,255,255,0.05)' }} }}, x: {{ ticks: {{ color: '#64748b' }}, grid: {{ display: false }} }} }} }}
+            options: {{
+                maintainAspectRatio: false,
+                plugins: {{ legend: {{ display: false }} }},
+                scales: {{
+                    y: {{
+                        beginAtZero: true,
+                        ticks: {{ 
+                            color: '#64748b',
+                            callback: function(value) {{ return value + '%'; }}
+                        }},
+                        grid: {{ color: 'rgba(255,255,255,0.05)' }}
+                    }},
+                    x: {{
+                        ticks: {{ color: '#94a3b8' }},
+                        grid: {{ display: false }}
+                    }}
+                }}
+            }}
         }});
     </script>
 </body>
