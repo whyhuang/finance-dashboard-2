@@ -1,8 +1,8 @@
 name: Jason TV Daily Auto Update
 on:
   schedule:
-    - cron: '30 1 * * *' # 台北時間 09:30 (UTC 01:30)
-  workflow_dispatch: # 允許手動觸發
+    - cron: '30 1 * * *'
+  workflow_dispatch:
   
 permissions:
   contents: write
@@ -12,72 +12,40 @@ jobs:
     runs-on: ubuntu-latest
     
     steps:
-      - name: 1. 下載程式碼
-        uses: actions/checkout@v3
-        with:
-          fetch-depth: 0  # 確保完整歷史紀錄
+      - name: 📥 下載程式碼
+        uses: actions/checkout@v4
       
-      - name: 2. 設定 Python 環境
-        uses: actions/setup-python@v4
+      - name: 🐍 設定 Python 3.10
+        uses: actions/setup-python@v5
         with:
           python-version: '3.10'
-          cache: 'pip'  # 加速安裝
+          cache: 'pip'
           
-      - name: 3. 安裝必要套件
+      - name: 📦 安裝套件
         run: |
           pip install --upgrade pip
           pip install requests yfinance pandas lxml google-generativeai
-          pip list  # 顯示已安裝套件（除錯用）
           
-      - name: 4. 執行 Jason TV 腳本
+      - name: ▶️ 執行腳本
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
-        run: |
-          echo "開始執行 update.py..."
-          python update.py
-          echo "腳本執行完成"
+        run: python update.py
         
-      - name: 5. 檢查生成的檔案 (除錯)
+      - name: 🔍 檢查結果
         run: |
-          echo "=== 檢查 index.html 是否存在 ==="
-          if [ -f index.html ]; then
-            echo "✅ index.html 已生成"
-            echo "檔案大小: $(wc -c < index.html) bytes"
-            echo "前 30 行內容:"
+          if [ -f "index.html" ]; then
+            echo "✅ index.html 已生成 ($(wc -c < index.html) bytes)"
             head -30 index.html
           else
-            echo "❌ 錯誤: index.html 不存在!"
-            ls -la
+            echo "❌ index.html 未生成"
             exit 1
           fi
-        
-      - name: 6. 檢查是否有變更
-        id: check_changes
-        run: |
-          git diff --quiet index.html || echo "changed=true" >> $GITHUB_OUTPUT
           
-      - name: 7. 提交並推送變更
-        if: steps.check_changes.outputs.changed == 'true'
+      - name: 📤 提交更新
         run: |
-          git config --global user.name "Jason-TV-Bot"
-          git config --global user.email "bot@jason.tv"
+          git config user.name "Jason-TV-Bot"
+          git config user.email "bot@jasontv.ai"
           git add index.html
-          git commit -m "🤖 Auto update: $(TZ='Asia/Taipei' date '+%Y-%m-%d %H:%M:%S') (台北時間)"
+          git diff --staged --quiet || git commit -m "🤖 Auto update: $(date '+%Y-%m-%d %H:%M')"
           git push
-          echo "✅ 已推送更新到 GitHub"
-          
-      - name: 8. 無變更通知
-        if: steps.check_changes.outputs.changed != 'true'
-        run: |
-          echo "ℹ️ index.html 沒有變更，跳過 commit"
-          
-      - name: 9. 上傳日誌 (失敗時可查看)
-        if: failure()
-        uses: actions/upload-artifact@v3
-        with:
-          name: debug-logs
-          path: |
-            *.log
-            index.html
-          retention-days: 7
