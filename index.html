@@ -1,98 +1,100 @@
-
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Jason TV v10.8 | Live</title>
-    <script src="[https://cdn.jsdelivr.net/npm/chart.js](https://cdn.jsdelivr.net/npm/chart.js)"></script>
-    <link href="[https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap](https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700&family=Noto+Sans+TC:wght@400;700&display=swap)" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jason TV Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
-        :root { --bg: #05070a; --accent: #00e5ff; --card: #11151c; --border: #232a35; --up: #ff4d4d; --down: #00ff88; --text: #e2e8f0; }
-        body { font-family: 'Noto Sans TC', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding-bottom: 50px; }
-        header { position: fixed; top: 0; width: 100%; height: 60px; background: rgba(17,21,28,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 30px; z-index: 1000; box-sizing: border-box; }
-        .logo { font-size: 22px; font-weight: 900; color: var(--accent); letter-spacing: 2px; text-shadow: 0 0 10px rgba(0,229,255,0.5); }
-        .container { max-width: 1200px; margin: 80px auto; padding: 0 20px; }
-        .hero { background: linear-gradient(145deg, #161b25, #0b0e14); border: 1px solid var(--accent); border-radius: 16px; padding: 25px; margin-bottom: 30px; }
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px; margin-bottom: 30px; }
-        .card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px; }
-        .card-val { font-family: 'JetBrains Mono'; font-size: 26px; font-weight: 700; color: var(--text); margin-top: 8px; }
-        .card-label { font-size: 12px; color: #94a3b8; }
-        .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 25px; margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; color: #64748b; font-size: 12px; border-bottom: 1px solid var(--border); padding: 10px; }
-        td { padding: 15px 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; }
-        .debug-box { margin-top: 50px; padding: 20px; background: #2a0a0a; border: 1px solid #333; font-family: monospace; font-size: 12px; border-radius: 8px; }
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .header { text-align: center; margin-bottom: 30px; }
+        .update-time { color: #888; font-size: 14px; }
+        .market-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 30px; }
+        .market-card { background: #2a2a2a; padding: 15px; border-radius: 8px; }
+        .market-label { color: #888; font-size: 12px; }
+        .market-value { font-size: 24px; font-weight: bold; margin-top: 5px; }
+        .chart-container { background: #2a2a2a; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+        canvas { max-height: 300px; }
     </style>
 </head>
 <body>
-    <header>
-        <div class="logo">JASON TV</div>
-        <div style="color:#00ff88; font-size:11px;" id="clock">● LIVE | Connecting...</div>
-    </header>
-    <div class="container">
-        <div class="hero">
-            <h2 style="color:var(--accent); margin-bottom:20px; font-size:18px; font-weight:bold;">📺 AI 戰情摘要 (來源：《AI數位孿生驚人演化! &quot;受惠股&quot;使用說明!》【錢線百分百】20251229-9│非凡財經新聞│)</h2>
-            <div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>AI 暫時無法連線</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>請檢查 API 配額</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>目前顯示即時報價</div><div style="margin-bottom:10px; position:relative; padding-left:20px; line-height:1.6; color:#cbd5e1;"><span style="position:absolute; left:0; color:#00e5ff;">▶</span>請稍後再試</div></div>
-        </div>
-        
-        <div class="grid">
-            <div class="card"><div class="card-label">加權指數 TAIEX</div><div class="card-val" style="color:var(--up)">28,665 ▲</div></div>
-            <div class="card"><div class="card-label">台積電 TSMC</div><div class="card-val" style="color:var(--up)">1,520 ▲</div></div>
-            <div class="card"><div class="card-label">黃金價格 GOLD</div><div class="card-val" style="color:#fbbf24">$4,375</div></div>
-            <div class="card"><div class="card-label">白銀價格 SILVER</div><div class="card-val" style="color:#cbd5e1">$73.39</div></div>
-            
-            <div class="card"><div class="card-label">美債10年殖利率</div><div class="card-val" style="color:#a78bfa">4.12%</div></div>
-            <div class="card"><div class="card-label">美元/台幣</div><div class="card-val">31.371</div></div>
-            <div class="card"><div class="card-label">比特幣 BTC</div><div class="card-val" style="color:#f59e0b">$86,925</div></div>
-            <div class="card"><div class="card-label">以太幣 ETH</div><div class="card-val" style="color:#a78bfa">$2,922</div></div>
-        </div>
-
-        <div class="panel">
-            <h3 style="color:var(--accent); font-size:16px;">📊 五大資產過去一年走勢比較 (Trend %)</h3>
-            <div style="height:350px;"><canvas id="mainChart"></canvas></div>
-        </div>
-        <div class="panel">
-            <h3 style="color:var(--accent); font-size:16px;">🔥 錢線熱門追蹤 (AI 自動選股)</h3>
-            <table><thead><tr><th>代號</th><th>名稱</th><th>訊號</th><th>關鍵理由</th></tr></thead><tbody><tr><td style='font-weight:bold; color:#00e5ff;'>2330</td><td>台積電</td><td style='color:#ff4d4d;'>▲</td><td style='color:#94a3b8; font-size:13px;'>權值股領軍</td></tr></tbody></table>
-        </div>
-        <div class="debug-box" style="color: #ff9999;"><h3>🔧 系統診斷日誌</h3>Step 1: 連線 Yahoo Finance...<br>📊 BTC 走勢數據範例: [6.98, -11.73, -15.12]<br>✅ Yahoo 數據成功<br>Step 2: 連線 YouTube (擴大搜尋)...<br>✅ 抓到影片: 《AI數位孿生驚人演化! &q...<br>Step 3: 連線 Gemini AI...<br>ℹ️ 鎖定模型: gemini-1.5-flash<br>❌ AI 失敗: 404 models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.<br>Step 4: 生成 HTML...</div>
+    <div class="header">
+        <h1>📊 Jason TV 市場儀表板</h1>
+        <div class="update-time">最後更新: 2026-01-03 14:43:00 (UTC+8)</div>
     </div>
+    
+    <div class="market-grid">
+        <div class="market-card">
+            <div class="market-label">台積電 (2330.TW)</div>
+            <div class="market-value">1,585</div>
+        </div>
+        <div class="market-card">
+            <div class="market-label">台股指數</div>
+            <div class="market-value">29,350</div>
+        </div>
+        <div class="market-card">
+            <div class="market-label">黃金 (USD/oz)</div>
+            <div class="market-value">4,314</div>
+        </div>
+        <div class="market-card">
+            <div class="market-label">比特幣 (USD)</div>
+            <div class="market-value">90,172</div>
+        </div>
+    </div>
+    
+    <div class="chart-container">
+        <canvas id="trendChart"></canvas>
+    </div>
+    
     <script>
-        function updateClock() {
-            const now = new Date();
-            document.getElementById('clock').innerHTML = '● LIVE | ' + now.toLocaleString('zh-TW', { hour12: false });
-        }
-        setInterval(updateClock, 1000);
-        updateClock();
-        
-        // 折線圖配置
-        const ctx = document.getElementById('mainChart').getContext('2d');
-        // 產生過去12個月的標籤 (簡易版)
-        const labels = Array.from({length: 12}, (_, i) => i + 1 + '月');
-
+        const ctx = document.getElementById('trendChart').getContext('2d');
         new Chart(ctx, {
             type: 'line',
             data: {
-                labels: labels,
+                labels: ['1月前', '2月前', '3月前', '4月前', '5月前', '6月前', '7月前', '8月前', '9月前', '10月前', '11月前', '12月前'],
                 datasets: [
-                    { label: '比特幣 (BTC)', data: [0.0, -17.61, -19.39, -8.01, 2.18, 4.62, 13.04, 5.69, 11.38, 6.98, -11.73, -15.12], borderColor: '#f59e0b', borderWidth: 3, tension: 0.4 },
-                    { label: '台股 (TAIEX)', data: [0.0, -2.01, -12.03, -13.99, -9.26, -5.4, 0.07, 3.01, 9.76, 20.01, 17.43, 21.85], borderColor: '#00e5ff', borderWidth: 2, tension: 0.4 },
-                    { label: '美股 (S&P500)', data: [0.0, -1.42, -7.1, -7.81, -2.13, 2.72, 4.95, 6.95, 10.73, 13.24, 13.39, 14.32], borderColor: '#38bdf8', borderWidth: 2, tension: 0.4 },
-                    { label: '黃金 (Gold)', data: [0.0, 0.86, 11.03, 17.51, 16.94, 17.09, 23.51, 36.56, 41.59, 49.98, 55.56], borderColor: '#fbbf24', borderWidth: 2, tension: 0.4 },
-                    { label: '白銀 (Silver)', data: [0.0, -2.83, 7.25, 1.25, 2.38, 13.77, 25.12, 43.96, 49.38, 75.69, 128.45], borderColor: '#cbd5e1', borderWidth: 1, tension: 0.4, borderDash: [5,5] }
+                    {
+                        label: '黃金',
+                        data: [0.0, 0.0, 10.08, 16.5, 15.94, 16.09, 22.45, 35.39, 40.38, 48.7, 52.48, 52.62],
+                        borderColor: '#FFD700',
+                        tension: 0.4
+                    },
+                    {
+                        label: '白銀',
+                        data: [0.0, 0.0, 10.37, 4.2, 5.36, 17.08, 28.77, 48.16, 53.73, 80.81, 124.65, 127.47],
+                        borderColor: '#C0C0C0',
+                        tension: 0.4
+                    },
+                    {
+                        label: '美股',
+                        data: [0.0, -5.75, -6.47, -0.72, 4.21, 6.46, 8.49, 12.33, 14.87, 15.02, 14.96, 15.18],
+                        borderColor: '#4CAF50',
+                        tension: 0.4
+                    },
+                    {
+                        label: '台股',
+                        data: [0.0, -10.23, -12.22, -7.4, -3.46, 2.12, 5.12, 12.0, 22.47, 19.84, 25.64, 27.31],
+                        borderColor: '#2196F3',
+                        tension: 0.4
+                    },
+                    {
+                        label: '比特幣',
+                        data: [0.0, -2.16, 11.66, 24.02, 26.98, 37.2, 28.28, 35.18, 29.85, 7.14, 3.72, 6.87],
+                        borderColor: '#FF9800',
+                        tension: 0.4
+                    }
                 ]
             },
             options: {
-                maintainAspectRatio: false,
-                plugins: { legend: { labels: { color: '#94a3b8' } } },
-                scales: {
-                    y: {
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { color: '#64748b', callback: function(val){return val+'%'} }
-                    },
-                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                responsive: true,
+                plugins: {
+                    legend: { labels: { color: '#fff' } },
+                    title: { display: true, text: '近一年漲跌趨勢 (%)', color: '#fff' }
                 },
-                elements: { point: { radius: 0, hitRadius: 10 } }
+                scales: {
+                    y: { ticks: { color: '#fff' } },
+                    x: { ticks: { color: '#fff' } }
+                }
             }
         });
     </script>
